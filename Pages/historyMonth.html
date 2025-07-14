@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="../styles.css">
+    <script src="../scripts.js" defer></script>
+    <script type="module" src="../componenets/total-section.js" defer></script>
+    <script type="module" src="../componenets/side-bar.js" defer></script>
+    <title>Alpha Pool</title>
+  </head>
+  <body>
+    <div class="container">
+      <side-bar selected="history"></side-bar>
+    <div class="main">
+    <div class="page">
+      <div class="topSection">
+        <div class="topSectionLeft">
+          <label for="monthPicker">Choisir un Mois:</label>
+          <input type="month" id="monthPicker">
+        </div>
+        <total-section id="totalSection" total="0"></total-section>
+      </div>
+</br>
+<div class="historySessionsList" id="list">
+  <h2>
+    Historique des Sessions
+  </h2>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Table</th>
+        <th>Durée</th>
+        <th>Montant</th>
+        <th>Date</th>
+      </tr>
+    </thead>
+    <tbody id="historySessionsListmonth" >
+      <tr>
+        <td colspan="5" style="text-align: center; color: gray;">Vide</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body>
+</html>

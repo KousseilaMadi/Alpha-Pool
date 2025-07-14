@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="../styles.css">
+    <script src="../scripts.js" defer></script>
+    <script type="module" src="../componenets/counter-card.js" defer></script>
+    <script type="module" src="../componenets/go-home.js" defer></script>
+    <script type="module" src="../componenets/side-bar.js" defer></script>
+    <title>Alpha Pool</title>
+  </head>
+  <body onload="onRegisterLoad()">
+    <div class="container">
+    <side-bar selected="register"></side-bar>
+    <div class="main">
+    <!-- <go-home></go-home> -->
+    <div class="countersContainer">
+        <counter-card id="0"></counter-card>
+        <counter-card id="1"></counter-card>
+        <counter-card id="2"></counter-card>
+        <counter-card id="3"></counter-card>
+    </div>
+  </br>
+  </br>
+  </br>
+    <div class="sessionsList" id="list">
+      <h2>
+        Historique des Sessions
+      </h2>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Table</th>
+            <th>Durée</th>
+            <th>Montant</th>
+            <!-- <th>Date</th> -->
+          </tr>
+        </thead>
+        <tbody id="sessionsList" >
+          <tr>
+            <td colspan="4" style="text-align: center; color: gray;">Vide</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    </div>
+    </div>
+  </body>
+</html>
