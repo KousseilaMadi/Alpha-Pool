@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Alpha Pool</title>
+    <link rel="stylesheet" href="../styles.css">
+    <script src="../scripts.js" defer></script>
+    <script type="module" src="../componenets/side-bar.js" defer></script>
+</head>
+<body>
+      <style>
+.bracket {
+  display: flex;
+  gap: 4vh;
+  align-items: center;
+  justify-content: center;
+}
+
+.round {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.match {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--text-color);
+  border-radius: 1vh;
+  width: 23vh;
+  height: 5vh;
+}
+
+.player{
+  height:100%;
+  width: 100%;
+  padding-left: 1vh;
+  padding-right: 1vh;
+  text-align: center; /*aligns the text left-right*/
+  align-content: center; /*aligns the text top-bottom*/
+  background-color: #cfcfcf67;
+  border-width: 0;
+  font-size: 1.6vh;
+}
+.leftPlayer{
+  border-radius: 1vh 0vh 0vh 1vh;
+}
+.rightPlayer{
+  border-radius: 0vh 1vh 1vh 0vh;
+}
+.player:hover{
+  background-color: rgb(94, 255, 0);
+}
+.vs{
+  flex: 0 0 auto;
+  text-align: center;
+  padding-left: 1vh;
+  padding-right: 1vh;
+  font-weight: 600;
+  font-size: 1.8vh;
+}
+.spacer {
+  height: 2vh;
+}
+
+.spacer-half {
+  height: 1vh;
+}
+</style>
+<div class="container">
+      <side-bar selected="tournament"></side-bar>
+    <div class="main">
+
+
+      
+<div class="bracket">
+  <!-- Round 1 -->
+  <div class="round">
+    <div class="match">
+      <button class="player leftPlayer">Koussseila Madi</button>
+      <div class="vs">VS</div>
+      <button class="player rightPlayer">seddar abdelhadi</button>
+    </div>
+    
+    <div class="spacer"></div>
+    <div class="match">
+      <button class="player leftPlayer">Koussseila Madi</button>
+      <div class="vs">VS</div>
+      <button class="player rightPlayer">seddar abdelhadi</button>
+    </div>
+
+    <div class="spacer"></div>
+    <div class="spacer"></div>
+    <div class="match">
+      <button class="player leftPlayer">Koussseila Madi</button>
+      <div class="vs">VS</div>
+      <button class="player rightPlayer">seddar abdelhadi</button>
+    </div>
+
+    <div class="spacer"></div>
+    <div class="match">
+      <button class="player leftPlayer">Koussseila Madi</button>
+      <div class="vs">VS</div>
+      <button class="player rightPlayer">seddar abdelhadi</button>
+    </div>
+
+
+  </div>
+
+  <!-- Round 2 -->
+  <div class="round">
+    
+    <div class="match">
+      <button class="player leftPlayer">Koussseila Madi</button>
+      <div class="vs">VS</div>
+      <button class="player rightPlayer">seddar abdelhadi</button>
+    </div>
+    <div class="spacer "></div>
+    <div class="spacer "></div>
+    <div class="spacer "></div>
+    <div class="spacer "></div>
+    <div class="spacer "></div>
+    <div class="spacer "></div>
+
+    <div class="match">
+      <button class="player leftPlayer">Koussseila Madi</button>
+      <div class="vs">VS</div>
+      <button class="player rightPlayer">seddar abdelhadi</button>
+    </div>
+
+  </div>
+
+  
+  <!-- Round 3 -->
+  <div class="round">
+    
+    <div class="match">
+      <button class="player leftPlayer">Koussseila Madi</button>
+      <div class="vs">VS</div>
+      <button class="player rightPlayer">seddar abdelhadi</button>
+    </div>
+
+
+  </div>
+</div>
+</div>
+
+
+
+
+    </div>
+</body>
+</html>
