@@ -102,21 +102,71 @@ contextBridge.exposeInMainWorld("myAPI", {
       callback(data, totalAmount)
     );
   },
-  navigateTo: (page, id) => {
-    ipcRenderer.send("navigate-to", page, id);
+  navigateTo: (page, id, mode) => {
+    ipcRenderer.send("navigate-to", page, id, mode);
   },
   addTournament: (name, numberOfPlayers, date, mode, type, playersNames) =>
-    ipcRenderer.send("add-tournament", name, numberOfPlayers, date, mode, type, playersNames),
+    ipcRenderer.send(
+      "add-tournament",
+      name,
+      numberOfPlayers,
+      date,
+      mode,
+      type,
+      playersNames
+    ),
   fetchTournaments: () => ipcRenderer.send("fetch-tournaments"),
   updateTournamentsList: (callback) => {
     ipcRenderer.on("tournaments-list", (_, data) => callback(data));
   },
-  fetchTournamentEdit: (id) => ipcRenderer.send("fetch-tournament-edit", id),
-  editTournament: (callback) => {
-    ipcRenderer.on("tournament-edit", (_, data) => callback(data));
+  fetchTournament: (id) => ipcRenderer.send("fetch-tournament", id),
+  getTournament: (callback) => {
+    ipcRenderer.on("get-tournament", (_, data) => callback(data));
   },
-  fetchTournamentManage: (id) => ipcRenderer.send("fetch-tournament-manage", id),
-  manageTournament: (callback) => {
-    ipcRenderer.on("tournament-manage", (_, data) => callback(data));
-  }
+  fetchLeaderboard: (id) => ipcRenderer.send("fetch-leaderboard", id),
+  getLeaderboard: (callback) => {
+    ipcRenderer.on("get-leaderboard", (_, data) => callback(data));
+  },
+  deleteTournament: (id, mode) =>
+    ipcRenderer.send("delete-tournament", id, mode),
+  onDeletedTournament: (callback) =>
+    ipcRenderer.on("tournament-deleted", (_) => callback()),
+  addToLeaderboard: (tournamentId, playerName, score) =>
+    ipcRenderer.send("add-to-leaderboard", tournamentId, playerName, score),
+  OnAddToLeaderboard: (callback) =>
+    ipcRenderer.on("added-to-leaderboard", (_) => callback()),
+  deleteFromLeaderboard: (tournamentId, playerName) =>
+    ipcRenderer.send("delete-from-leaderboard", tournamentId, playerName),
+  OnDeleteFromLeaderboard: (callback) =>
+    ipcRenderer.on("deleted-from-leaderboard", (_) => callback()),
+  deleteAllFromLeaderboard: (tournamentId) =>
+    ipcRenderer.send("delete-all-from-leaderboard", tournamentId),
+  OnDeleteAllFromLeaderboard: (callback) =>
+    ipcRenderer.on("deleted-all-from-leaderboard", (_) => callback()),
+  addMatch: (
+    tournamentId,
+    round,
+    player1Name,
+    player2Name,
+    winnerId,
+    ancestorMatch1Id,
+    ancestorMatch2Id
+  ) =>
+    ipcRenderer.send(
+      "add-match",
+      tournamentId,
+      round,
+      player1Name,
+      player2Name,
+      winnerId,
+      ancestorMatch1Id,
+      ancestorMatch2Id
+    ),
+  addTournamentReply: (callback) =>
+    ipcRenderer.on("add-tournament-reply", (_, tournamentId) =>
+      callback(tournamentId)
+    ),
+  fetchPlayers: (tournamentId) =>
+    ipcRenderer.send("fetch-players", tournamentId),
+  getPlayers: (callback)=>ipcRenderer.on('get-players', (_, tournamentId, data) => callback(tournamentId, data)) 
 });

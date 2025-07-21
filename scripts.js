@@ -88,46 +88,104 @@ window.myAPI.updateHistorySessionsList((data, totalAmount) => {
     });
   }
 });
+window.myAPI.getTournament((data) => {
+  console.log("Eliminatoire");
+  console.log("selected: ", JSON.stringify(data));
+  const bracket = document.getElementById("bracket");
+  const leaderboard = document.getElementById("leaderboardContainer");
+  const tournamentTitle = document.getElementById("tournamentTitle");
+  bracket.classList.remove("hidden");
+  leaderboard.classList.add("hidden");
+  tournamentTitle.textContent =
+    data["tournament"]["name"] + " ( " + "Eliminatoire" + " ) ";
+  bracket.innerHTML = "";
+  let round_1 = [];
+  for (let i = 0; i < data.matches.length; i++) {
+    if (data.matches[i].round === 1) round_1.push(data.matches[i]);
+  }
+  console.log(round_1);
+});
 
-window.myAPI.editTournament((data) => {
-  //when selecting a tournament to edit
-  console.log("editing: ", JSON.stringify(data));
-  const name = document.getElementById("Tname");
-  const mode = document.getElementById("Tmode");
-  const type = document.getElementById("Ttype");
-  const date = document.getElementById("Tdate");
-  const players = document.getElementById("Tplayers");
-  const playersList = document.getElementById("playersList");
-  name.textContent = data["name"];
-  mode.textContent =
-    data["mode"] === "C"
-      ? "Classement"
-      : data["mode"] === "E"
-      ? "Eliminatoire"
-      : "NAN";
-  type.textContent = data["type"];
-  date.textContent = data["date"];
-  players.textContent = data["numberOfPlayers"] + " Joueurs";
-  playersList.innerHTML = "";
-  for (let u = 0; u < data["numberOfPlayers"]; u++) {
-    playersList.innerHTML += `
-    <li><input type="text" placeholder="joueur ${u + 1}" id="${u}"></li>
-    `;
+window.myAPI.getLeaderboard((data) => {
+  console.log("Classement");
+  console.log("selected: ", data);
+  const bracket = document.getElementById("bracket");
+  const leaderboardContainer = document.getElementById("leaderboardContainer");
+  const tournamentTitle = document.getElementById("tournamentTitle");
+
+  bracket.classList.add("hidden");
+  leaderboardContainer.classList.remove("hidden");
+  tournamentTitle.textContent =
+    data["tournament"]["name"] + " ( " + "Classement" + " ) ";
+  const leaderboard = document.getElementById("leaderboard");
+  if (leaderboard) {
+    leaderboard.innerHTML = "";
+    for (let i = 0; i < data.players.length; i++) {
+      leaderboard.innerHTML += `
+      <div class="leaderboard-el">
+                <h2>${data.players[i]["name"]}</h2>
+                <h2>${data.players[i]["score"]}</h2>
+              </div>`;
+    }
   }
 });
 
-window.myAPI.manageTournament((data) => {
-  //when selecting a tournament to manage
-  console.log("managing: ", JSON.stringify(data));
+const deleteButton = document.getElementById("del-btn");
+const addButton = document.getElementById("add-btn");
+const suppButton = document.getElementById("sup-btn");
+
+if (deleteButton) {
+  deleteButton.addEventListener("click", () => {
+    deleteFromLeaderboard();
+  });
+}
+
+if (addButton) {
+  addButton.addEventListener("click", () => {
+    addToLeaderboard();
+  });
+}
+
+if (suppButton) {
+  suppButton.addEventListener("click", () => {
+    deleteAllFromLeaderboard();
+  });
+}
+
+window.myAPI.onDeletedTournament(() => {
+  window.myAPI.fetchTournaments();
 });
 
-function editTournament(id) {
-  window.myAPI.navigateTo("editTournament", id);
+function manageTournament(id, mode) {
+  window.myAPI.navigateTo("manageTournament", id, mode);
 }
 
-function manageTournament(id) {
-  window.myAPI.navigateTo("manageTournament", id);
+function deleteTournament(id, mode) {
+  console.log(id, mode);
+  window.myAPI.deleteTournament(id, mode);
 }
+
+window.myAPI.addTournamentReply((tournamentId) => {
+  console.log(tournamentId);
+  window.myAPI.fetchPlayers(tournamentId); //fetch the players to create the matches of round 1 with their names
+});
+
+window.myAPI.getPlayers((tournamentId, playersList) => {
+  console.log("players:",tournamentId,  playersList);
+  for (let i = 0; i < parseInt(playersList.length); i+=2) {
+    console.log('index ', i, " ", playersList[i])
+    console.log('index ', i+1, " ", playersList[i+1])
+    window.myAPI.addMatch(
+      tournamentId,
+      1,
+      playersList[i].playerId,
+      playersList[i+1].playerId,
+      null,
+      null,
+      null
+    );
+  }
+});
 
 window.myAPI.updateTournamentsList((data) => {
   const tournamentsList = document.getElementById("tournaments_list");
@@ -139,14 +197,15 @@ window.myAPI.updateTournamentsList((data) => {
         tournamentsList.innerHTML += `
         <li class="tournament_item">
                 <div class="tournament_info">
-                  <h3>${el["name"]}</h3>
-                  ${el["date"]}
+                  <h3>${el.name}</h3>
+                  ${el.date}
                 </br>
-                  ${el["numberOfPlayers"]} Joueurs
+                  ${el.numberOfPlayers} Joueurs
                 </div>
-                <div>
-                  <button class="edit_manage_tournament" style="font-size: 2.4vh;" onclick="manageTournament(${el["tournamentId"]})">Gérer</button>
-                </div>
+                <div style="align-content: center; display: flex; gap: 2vh;">
+                  <button class="edit_manage_tournament" style="font-size: 2.4vh;" onclick='manageTournament(${el.tournamentId}, "${el.mode}")'>Gérer</button>
+                  <button class="delete" onclick='deleteTournament(${el.tournamentId}, "${el.mode}")'><img src="../icons/delete.png" style="filter: invert(100%) sepia(3%) saturate(256%) hue-rotate(280deg) brightness(116%) contrast(100%);"></button>
+                  </div>
               </li>
         `;
         console.log("name:", el["name"]);
@@ -158,6 +217,74 @@ window.myAPI.updateTournamentsList((data) => {
     }
   }
 });
+
+window.myAPI.OnAddToLeaderboard(() => {
+  const leaderboard = document.getElementById("leaderboard");
+  if (leaderboard) {
+    console.log("leaderbaord\n");
+  }
+});
+
+window.myAPI.OnDeleteFromLeaderboard(() => {
+  const leaderboard = document.getElementById("leaderboard");
+  if (leaderboard) {
+    console.log("leaderbaord\n");
+  }
+});
+
+window.myAPI.OnDeleteAllFromLeaderboard(() => {
+  const leaderboard = document.getElementById("leaderboard");
+  if (leaderboard) {
+    console.log("leaderbaord\n");
+  }
+});
+function addToLeaderboard() {
+  const playerName = document.getElementById("playerName");
+  const score = document.getElementById("score");
+  let filled = false;
+  if (playerName.value !== "") {
+    playerName.classList.remove("required");
+    filled = true;
+  } else {
+    filled = false;
+    playerName.classList.add("required");
+  }
+  if (score.value !== "") {
+    score.classList.remove("required");
+    filled = true;
+  } else {
+    filled = false;
+    score.classList.add("required");
+  }
+  if (filled) {
+    const url = new URLSearchParams(window.location.search);
+    window.myAPI.addToLeaderboard(url.get("id"), playerName.value, score.value);
+    window.myAPI.fetchLeaderboard(url.get("id"));
+  }
+}
+
+function deleteFromLeaderboard() {
+  const playerName = document.getElementById("playerName");
+  let filled = false;
+  if (playerName.value !== "") {
+    playerName.classList.remove("required");
+    filled = true;
+  } else {
+    filled = false;
+    playerName.classList.add("required");
+  }
+  if (filled) {
+    const url = new URLSearchParams(window.location.search);
+    window.myAPI.deleteFromLeaderboard(url.get("id"), playerName.value);
+    window.myAPI.fetchLeaderboard(url.get("id"));
+  }
+}
+
+function deleteAllFromLeaderboard() {
+  const url = new URLSearchParams(window.location.search);
+  window.myAPI.deleteAllFromLeaderboard(url.get("id"));
+  window.myAPI.fetchLeaderboard(url.get("id"));
+}
 
 document.addEventListener("DOMContentLoaded", () => {
   const dayPicker = document.getElementById("dayPicker");
@@ -223,8 +350,11 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("size:", url.size);
     let action = window.location.pathname.split("/").pop().split("_")[0];
     console.log("name:", action);
-    if (action === "edit") window.myAPI.fetchTournamentEdit(url.get("id"));
-    if (action === "manage") window.myAPI.fetchTournamentManage(url.get("id"));
+    if (action === "manage") {
+      url.get("mode") === "E"
+        ? window.myAPI.fetchTournament(url.get("id"))
+        : window.myAPI.fetchLeaderboard(url.get("id"));
+    }
   }
   //insert innerHTML content into the classic_tournament
   //element when experimental data is ready
@@ -258,7 +388,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       let playersFilled = true;
       let infoFilled = false;
-
       if (
         name.value === "" ||
         playersCount.value === "" ||
@@ -275,12 +404,12 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         name.classList.remove("required");
       }
-
-      if (playersCount.value === "") {
-        playersCount.classList.add("required");
-      } else {
-        playersCount.classList.remove("required");
-      }
+      if (mode.value === "E")
+        if (playersCount.value === "" || !Number.isInteger(Math.log2(playersCount.value))) {
+          playersCount.classList.add("required");
+        } else {
+          playersCount.classList.remove("required");
+        }
 
       if (date.value === "") {
         date.classList.add("required");
@@ -300,20 +429,21 @@ document.addEventListener("DOMContentLoaded", () => {
         type.classList.remove("required");
       }
 
-      for (let i = 0; i < parseInt(playersCount.value); i++) {
-        const el = document.getElementById("field_" + i);
-        if (!el || el.value === "") {
-          playersFilled = false;
-          el.classList.add("required");
-          break;
+      if (mode.value === "E")
+        for (let i = 0; i < parseInt(playersCount.value); i++) {
+          const el = document.getElementById("field_" + i);
+          if (!el || el.value === "") {
+            playersFilled = false;
+            el.classList.add("required");
+            break;
+          }
+          el.classList.remove("required");
+          console.log(playersFilled);
         }
-        el.classList.remove("required");
-        console.log(playersFilled);
-      }
 
-      let tournamentPlayers = []
+      let tournamentPlayers = [];
 
-      if (playersFilled && infoFilled) {
+      if (playersFilled && infoFilled && Number.isInteger(Math.log2(playersCount.value))) {
         console.log("Tournament Info:");
         console.log("Name:", name.value);
         console.log("Players:", playersCount.value);
@@ -324,23 +454,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
         for (let i = 0; i < parseInt(playersCount.value); i++) {
           const el = document.getElementById("field_" + i);
-          tournamentPlayers.push(el.value)
+          tournamentPlayers.push(el.value);
         }
+
+        // console.log(tournamentPlayers);
+        window.myAPI.addTournament(
+          name.value.toString(),
+          parseInt(playersCount.value),
+          date.value.toString(),
+          mode.value.toString().charAt(0),
+          type.value.toString(),
+          tournamentPlayers
+        );
+        window.myAPI.fetchTournaments();
         if (modal) modal.classList.add("hidden");
       } else {
         console.log("empty field");
       }
-      console.log(tournamentPlayers)
-      window.myAPI.addTournament(
-        name.value.toString(),
-        parseInt(playersCount.value),
-        date.value.toString(),
-        mode.value.toString().charAt(0),
-        type.value.toString(),
-        tournamentPlayers
-      );
-      //edit this fucntion
-      window.myAPI.fetchTournament();
+
+      // window.myAPI.fetchTournament(18);//test purposes only
     };
   /*end*/
 
@@ -353,6 +485,27 @@ document.addEventListener("DOMContentLoaded", () => {
         playersList.innerHTML += `<li><input type="text" id="field_${u}" placeholder="Joueure ${
           u + 1
         }"></li>`;
+      }
+    });
+  }
+
+  const modeSelector = document.getElementById("tournamentMode");
+  if (modeSelector) {
+    const playersList = document.getElementById("modal-right");
+    const playerCount = document.getElementById("playerCount");
+    const playerCountLabel = document.getElementById("playerCountLabel");
+    modeSelector.addEventListener("change", () => {
+      if (modeSelector.value === "E") {
+        console.log("e");
+        playersList.classList.remove("hidden");
+        playerCount.classList.remove("hidden");
+        playerCountLabel.classList.remove("hidden");
+      }
+      if (modeSelector.value === "C") {
+        console.log("c");
+        playersList.classList.add("hidden");
+        playerCount.classList.add("hidden");
+        playerCountLabel.classList.add("hidden");
       }
     });
   }

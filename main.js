@@ -17,7 +17,7 @@ const createWindow = () => {
     },
   });
 
-  mainWindow.loadFile("Pages/tournaments.html");
+  mainWindow.loadFile("Pages/manage_tournament.html");
   mainWindow.maximize();
   mainWindow.show();
   mainWindow.webContents.openDevTools();
@@ -77,9 +77,58 @@ ipcMain.on("fetchSessions-month", (event, month, year) => {
   });
 });
 
-ipcMain.on("add-tournament", (event, name, numberOfPlayers, date, mode, type, playersNames) => {
-  db.add_tournament(name, numberOfPlayers, date, mode, type, playersNames);
-});
+ipcMain.on(
+  "add-tournament",
+  (event, name, numberOfPlayers, date, mode, type, playersNames) => {
+    const tournamentId = db.add_tournament(
+      name,
+      numberOfPlayers,
+      date,
+      mode,
+      type,
+      playersNames
+    );
+    const allWindows = BrowserWindow.getAllWindows();
+    allWindows.forEach((win) => {
+      win.webContents.send("add-tournament-reply", tournamentId);
+    });
+  }
+);
+
+
+ipcMain.on(
+  "fetch-players",
+  (event, tournamentId) => {
+    const allWindows = BrowserWindow.getAllWindows();
+    allWindows.forEach((win) => {
+      win.webContents.send("get-players", tournamentId, db.fetch_players(tournamentId));
+    });
+  }
+);
+
+ipcMain.on(
+  "add-match",
+  (
+    event,
+    tournamentId,
+    round,
+    player1Name,
+    player2Name,
+    winnerId,
+    ancestorMatch1Id,
+    ancestorMatch2Id
+  ) => {
+    db.add_match(
+      tournamentId,
+      round,
+      player1Name,
+      player2Name,
+      winnerId,
+      ancestorMatch1Id,
+      ancestorMatch2Id
+    );
+  }
+);
 
 ipcMain.on("fetch-tournaments", (event) => {
   const allWindows = BrowserWindow.getAllWindows();
@@ -88,24 +137,57 @@ ipcMain.on("fetch-tournaments", (event) => {
   });
 });
 
-ipcMain.on("fetch-tournament-edit", (event, id) => {
+ipcMain.on("fetch-tournament", (event, id) => {
   const allWindows = BrowserWindow.getAllWindows();
   allWindows.forEach((win) => {
-    win.webContents.send("tournament-edit", db.fetch_tournament_edit(id));
+    win.webContents.send("get-tournament", db.fetch_tournament(id));
   });
 });
 
-ipcMain.on("fetch-tournament-manage", (event, id) => {
+ipcMain.on("fetch-leaderboard", (event, id) => {
   const allWindows = BrowserWindow.getAllWindows();
   allWindows.forEach((win) => {
-    win.webContents.send("tournament-manage", db.fetch_tournament_manage(id));
+    win.webContents.send("get-leaderboard", db.fetch_leaderboard(id));
   });
 });
+
+ipcMain.on("delete-tournament", (event, id, mode) => {
+  const allWindows = BrowserWindow.getAllWindows();
+  db.delete_tournament(id, mode);
+  allWindows.forEach((win) => {
+    win.webContents.send("tournament-deleted");
+  });
+});
+
+ipcMain.on("add-to-leaderboard", (event, tournamentId, playerName, score) => {
+  db.add_to_leaderboard(tournamentId, playerName, score);
+  const allWindows = BrowserWindow.getAllWindows();
+  allWindows.forEach((win) => {
+    win.webContents.send("added-to-leaderboard");
+  });
+});
+
+ipcMain.on("delete-from-leaderboard", (event, tournamentId, playerName) => {
+  db.delete_from_leaderboard(tournamentId, playerName);
+  const allWindows = BrowserWindow.getAllWindows();
+  allWindows.forEach((win) => {
+    win.webContents.send("deleted-from-leaderboard");
+  });
+});
+
+ipcMain.on("delete-all-from-leaderboard", (event, tournamentId) => {
+  db.delete_all_from_leaderboard(tournamentId);
+  const allWindows = BrowserWindow.getAllWindows();
+  allWindows.forEach((win) => {
+    win.webContents.send("deleted-all-from-leaderboard");
+  });
+});
+
 // ipcMain.on('', (event) => {
 
 // })
 
-ipcMain.on("navigate-to", (event, page, id) => {
+ipcMain.on("navigate-to", (event, page, id, mode) => {
   const pageTree = {
     home: "Pages/index.html",
     history: "Pages/history.html",
@@ -119,7 +201,8 @@ ipcMain.on("navigate-to", (event, page, id) => {
   if (target)
     mainWindow.loadFile(target, {
       query: {
-        id: id
+        id: id,
+        mode: mode,
       },
     });
 });

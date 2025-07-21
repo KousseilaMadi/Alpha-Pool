@@ -3,6 +3,7 @@ const db = new Database("AlphaPool");
 
 function initialize_db() {
   //edit this exec according to the form of the db later
+  db.pragma("foreign_keys = ON")
   db.exec(`
         CREATE TABLE IF NOT EXISTS Sessions (
             sessionId INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -18,7 +19,7 @@ function initialize_db() {
         CREATE TABLE IF NOT EXISTS Tournaments (
             tournamentId INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
-            numberOfPlayers INTEGER NOT NULL,
+            numberOfPlayers INTEGER,
             date TEXT NOT NULL,
             mode CHAR(1) NOT NULL, 
             type TEXT NOT NULL 
@@ -27,7 +28,8 @@ function initialize_db() {
         
         CREATE TABLE IF NOT EXISTS Players (
             playerId INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL
+            name TEXT NOT NULL,
+            UNIQUE(name)
 
         );
 
@@ -35,9 +37,19 @@ function initialize_db() {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             tournamentId INTEGER NOT NULL,
             playerId INTEGER NOT NULL,
-            FOREIGN KEY (tournamentId) REFERENCES Tournaments(tournamentId),
-            FOREIGN KEY (playerId) REFERENCES Players(playerId),
+            FOREIGN KEY (tournamentId) REFERENCES Tournaments(tournamentId) ON DELETE CASCADE,
+            FOREIGN KEY (playerId) REFERENCES Players(playerId) ON DELETE CASCADE,
             UNIQUE(tournamentId, playerId)
+        );
+        
+        CREATE TABLE IF NOT EXISTS LeaderboardPlayers (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            leaderboardId INTEGER NOT NULL,
+            playerId INTEGER NOT NULL,
+            score INTEGER NOT NULL,
+            FOREIGN KEY (leaderboardId) REFERENCES Tournaments(tournamentId) ON DELETE CASCADE,
+            FOREIGN KEY (playerId) REFERENCES Players(playerId) ON DELETE CASCADE,
+            UNIQUE(leaderboardId, playerId)
         );
         
         CREATE TABLE IF NOT EXISTS Matches (
@@ -49,12 +61,12 @@ function initialize_db() {
             winnerId INTEGER,
             ancestorMatch1Id INTEGER,
             ancestorMatch2Id INTEGER,
-            FOREIGN KEY (tournamentId) REFERENCES Tournaments(tournamentId),
-            FOREIGN KEY (player1Id) REFERENCES Players(playerId),
-            FOREIGN KEY (player2Id) REFERENCES Players(playerId),
-            FOREIGN KEY (winnerId) REFERENCES Players(playerId),
-            FOREIGN KEY (ancestorMatch1Id) REFERENCES Matches(matchId),
-            FOREIGN KEY (ancestorMatch2Id) REFERENCES Matches(matchId)
+            FOREIGN KEY (tournamentId) REFERENCES Tournaments(tournamentId) ON DELETE CASCADE,
+            FOREIGN KEY (player1Id) REFERENCES Players(playerId) ON DELETE CASCADE,
+            FOREIGN KEY (player2Id) REFERENCES Players(playerId) ON DELETE CASCADE,
+            FOREIGN KEY (winnerId) REFERENCES Players(playerId) ON DELETE CASCADE,
+            FOREIGN KEY (ancestorMatch1Id) REFERENCES Matches(matchId) ON DELETE CASCADE,
+            FOREIGN KEY (ancestorMatch2Id) REFERENCES Matches(matchId) ON DELETE CASCADE
         );
         
         
@@ -114,6 +126,32 @@ function fetch_totalAmount_month(month, year) {
   return row.Total || 0;
 }
 
+function getUniquePlayerName(baseName) {
+  const getUniqueNameStmt = db.prepare(`
+  SELECT
+    CASE
+      WHEN NOT EXISTS (SELECT 1 FROM Players WHERE name = ?) THEN ?
+      ELSE (
+        SELECT ? || ' ' || COALESCE(
+          MAX(CAST(SUBSTR(name, LENGTH(?) + 2) AS INTEGER)) + 1,
+          1
+        )
+        FROM Players
+        WHERE name LIKE ? || ' %' AND name GLOB ? || ' [0-9]*'
+      )
+    END AS uniqueName
+`);
+  const { uniqueName } = getUniqueNameStmt.get(
+    baseName, // EXISTS
+    baseName, // THEN baseName
+    baseName, // baseName || " " || max+1
+    baseName, // LENGTH(baseName)
+    baseName, // LIKE 'baseName %'
+    baseName // GLOB 'baseName [0-9]*'
+  );
+  return uniqueName;
+}
+
 function add_tournament(name, numberOfPlayers, date, mode, type, playersNames) {
   const insertTournament = db.prepare(
     `INSERT INTO Tournaments(name, numberOfPlayers, date, mode, type) VALUES (?,?,?,?,?)`
@@ -125,37 +163,301 @@ function add_tournament(name, numberOfPlayers, date, mode, type, playersNames) {
   const linkToTournament = db.prepare(
     `INSERT INTO TournamentPlayers(tournamentId, playerId) VALUES(?, ?)`
   );
-  const addPLayersToTournament = db.transaction(() => {
+  let tournamentId;
+  const addPlayersToTournament = db.transaction(() => {
     const r = insertTournament.run(name, numberOfPlayers, date, mode, type);
-    const tournamentId = r.lastInsertRowid;
+    tournamentId = r.lastInsertRowid;
     for (const playerName of playersNames) {
       let playerId;
-      const result = insertPlayer.run(playerName);
+      const result = insertPlayer.run(getUniquePlayerName(playerName));
       playerId = result.lastInsertRowid;
       linkToTournament.run(tournamentId, playerId);
     }
   });
-  addPLayersToTournament();
+  addPlayersToTournament();
+  return tournamentId;
 }
 
 function fetch_tournaments() {
   const rows = db.prepare("SELECT * FROM Tournaments").all();
   return rows;
 }
-//mazal
 function fetch_tournament(id) {
-    const getTournament = db.prepare(`SELECT * FROM Tournaments WHERE tournamentId = ?`)
-    const getPlayers = db.prepare(`SELECT Players.name FROM Players JOIN TournamentPlayers ON Players.playerId = TournamentPlayers.playerId WHERE TournamentPlayers.tournamentId = ?`)
-    const getMatches = db.prepare(`SELECT * FROM Matches WHERE tournamentId = ?`)
-    const fetch = db.transaction(() => {
-        const tournament = getTournament.get(id)
-        const players = getPlayers.all(id)
-        const matches = getMatches.all(id)
-        return {tournament, players, matches}
-    })
-    return fetch()
+  const getTournament = db.prepare(
+    `SELECT * FROM Tournaments WHERE tournamentId = ?`
+  );
+  const getPlayers = db.prepare(
+    `SELECT Players.playerId, Players.name FROM Players JOIN TournamentPlayers ON Players.playerId = TournamentPlayers.playerId WHERE TournamentPlayers.tournamentId = ?`
+  );
+  const getMatches = db.prepare(`SELECT * FROM Matches WHERE tournamentId = ?`);
+  const fetch = db.transaction((id) => {
+    const tournament = getTournament.get(id);
+    const players = getPlayers.all(id);
+    const matches = getMatches.all(id);
+    return { tournament, players, matches };
+  });
+  return fetch(id);
 }
 
+function delete_tournament(id, mode) {
+  const getLinkedPLayersT = db.prepare(
+    `SELECT playerId FROM TournamentPlayers WHERE tournamentId = ?`
+  );
+  const getLinkedPLayersL = db.prepare(
+    `SELECT playerId FROM LeaderboardPlayers WHERE leaderboardId = ?`
+  );
+  const deleteMatches = db.prepare(
+    `DELETE FROM Matches WHERE tournamentId = ?`
+  );
+  const deletePlayers = db.prepare(`DELETE FROM Players WHERE playerId = ?`);
+  const unlinkPlayersT = db.prepare(
+    `DELETE FROM TournamentPlayers WHERE tournamentId = ?`
+  );
+  const unlinkPlayersL = db.prepare(
+    `DELETE FROM LeaderboardPlayers WHERE leaderboardId = ?`
+  );
+  const deleteTournament = db.prepare(
+    `DELETE FROM Tournaments WHERE tournamentId = ?`
+  );
+  console.log(id, mode);
+
+  const del = db.transaction((id, mode) => {
+    if (mode === "E") {
+      const players = getLinkedPLayersT.all(id);
+      deleteMatches.run(id);
+      unlinkPlayersT.run(id);
+      deleteTournament.run(id);
+      for (const player of players) {
+        deletePlayers.run(player["playerId"]);
+      }
+    }
+    if (mode === "C") {
+      const players = getLinkedPLayersL.all(id);
+      unlinkPlayersL.run(id);
+      deleteTournament.run(id);
+      for (const player of players) {
+        deletePlayers.run(player["playerId"]);
+      }
+    }
+  });
+  del(id, mode);
+}
+
+function fetch_leaderboard(id) {
+  const getTournament = db.prepare(
+    `SELECT * FROM Tournaments WHERE tournamentId = ?`
+  );
+  const getPlayers = db.prepare(
+    `SELECT Players.name, Players.playerId, LeaderboardPlayers.score FROM Players JOIN LeaderboardPlayers ON Players.playerId = LeaderboardPlayers.playerId WHERE LeaderboardPlayers.leaderboardId = ? ORDER BY LeaderboardPlayers.score ASC`
+  );
+  const fetch = db.transaction((id) => {
+    const tournament = getTournament.get(id);
+    const players = getPlayers.all(id);
+    return { tournament, players };
+  });
+  return fetch(id);
+}
+
+///to check
+function add_to_leaderboard(leaderboardId, playerName, score) {
+  const findPlayer = db.prepare(`
+    SELECT playerId FROM Players WHERE name = ?
+  `);
+
+  const insertPlayer = db.prepare(`
+    INSERT INTO Players (name) VALUES (?)
+  `);
+
+  const linkPlayer = db.prepare(`
+    INSERT INTO LeaderboardPlayers (leaderboardId, playerId, score) VALUES (?,?,?)
+  `);
+
+  const checkLink = db.prepare(`
+    SELECT 1 FROM LeaderboardPlayers
+    WHERE leaderboardId = ? AND playerId = ?
+  `);
+
+  const updateScore = db.prepare(`
+    UPDATE LeaderboardPlayers
+    SET score = ?
+    WHERE leaderboardId = ? AND playerId = ?
+  `);
+
+  const add = db.transaction(() => {
+    let player = findPlayer.get(playerName);
+
+    //if player exists and it s linked -> update
+    // if it doesnt exist -> add him -> link him
+    //if it exists and not linked -> no need for it
+
+    // If player does not exist, insert them
+    let playerId;
+    if (!player) {
+      //player does not exist
+      const result = insertPlayer.run(playerName);
+      playerId = result.lastInsertRowid;
+      linkPlayer.run(leaderboardId, playerId, score);
+    } else {
+      //player exists
+
+      playerId = player.playerId;
+      const isLinked = checkLink.get(leaderboardId, playerId);
+      if (!isLinked) {
+        throw new Error(
+          `Player '${playerName}' is not linked to leaderboard ${leaderboardId}.`
+        );
+      }
+
+      updateScore.run(score, leaderboardId, playerId);
+    }
+
+    // Update score
+  });
+
+  try {
+    add();
+  } catch (err) {
+    console.error(err.message);
+  }
+}
+
+function delete_from_leaderboard(leaderboardId, playerName) {
+  const getPlayerId = db.prepare(`
+    SELECT playerId FROM Players WHERE name = ?
+  `);
+
+  const checkPlayer = db.prepare(`
+    SELECT 1 FROM LeaderboardPlayers
+    WHERE leaderboardId = ? AND playerId = ?
+  `);
+
+  const deleteFromLeaderboard = db.prepare(`
+    DELETE FROM LeaderboardPlayers
+    WHERE leaderboardId = ? AND playerId = ?
+  `);
+
+  const deletePlayer = db.prepare(`
+    DELETE FROM Players WHERE playerId = ?
+  `);
+
+  const remove = db.transaction(() => {
+    const player = getPlayerId.get(playerName);
+    if (!player) {
+      throw new Error(`Player '${playerName}' not found.`);
+    }
+    const playerId = player.playerId;
+    const exists = checkPlayer.get(leaderboardId, playerId);
+    if (!exists) {
+      throw new Error(
+        `Player ${playerId} is not part of leaderboard ${leaderboardId}`
+      );
+    }
+
+    deleteFromLeaderboard.run(leaderboardId, playerId);
+    deletePlayer.run(playerId);
+  });
+
+  try {
+    remove();
+  } catch (err) {
+    console.error(err.message);
+  }
+}
+
+function delete_all_from_leaderboard(leaderboardId) {
+  const getPlayerIds = db.prepare(`
+    SELECT playerId FROM LeaderboardPlayers WHERE leaderboardId = ?
+  `);
+
+  const deleteFromLeaderboard = db.prepare(`
+    DELETE FROM LeaderboardPlayers WHERE leaderboardId = ?
+  `);
+
+  const deletePlayer = db.prepare(`
+    DELETE FROM Players WHERE playerId = ?
+  `);
+
+  const del = db.transaction(() => {
+    const players = getPlayerIds.all(leaderboardId);
+
+    deleteFromLeaderboard.run(leaderboardId);
+
+    for (const { playerId } of players) {
+      deletePlayer.run(playerId);
+    }
+  });
+
+  del();
+}
+
+function add_match(
+  tournamentId,
+  round,
+  player1Name,
+  player2Name,
+  winnerId,
+  ancestorMatch1Id,
+  ancestorMatch2Id
+) {
+  const insertMatch = db.prepare(
+    `INSERT INTO Matches(tournamentId, round, player1Id, player2Id, winnerId, ancestorMatch1Id, ancestorMatch2Id) VALUES(?,?,?,?,?,?,?)`
+  );
+  // const getPlayerId = db.prepare(`SELECT playerId FROM Players WHERE name = ?`);
+  // const player1 = getPlayerId.get(player1Name);
+  // const player2 = getPlayerId.get(player2Name);
+  // if (!player1 || !player2) {
+  //   throw new Error("One or both players not found in the database.");
+  // }
+
+  // const player1Id = player1.playerId
+  // const player2Id = player2.playerId
+  // console.log(player1Id)
+  // console.log(player2Id)
+
+  insertMatch.run(
+    tournamentId,
+    round,
+    player1Name,
+    player2Name,
+    winnerId || null,
+    ancestorMatch1Id || null,
+    ancestorMatch2Id || null
+  );
+}
+
+function fetch_players(tournamentId) {
+  const playersList = db.prepare(
+    "SELECT Players.playerId, Players.name from Players JOIN TournamentPlayers ON Players.playerId = TournamentPlayers.playerId WHERE TournamentPlayers.tournamentId = ?"
+  );
+  return playersList.all(tournamentId);
+}
+
+function update_match_p1(matchId, player1Id) {
+  const updateMatch = db.prepare(
+    "UPDATE Matches WHERE matchId = ? SET player1Id = ?"
+  );
+  updateMatch.run(matchId, player1Id);
+}
+
+function update_match_p2(matchId, player2Id) {
+  const updateMatch = db.prepare(
+    "UPDATE Matches WHERE matchId = ? SET player2Id = ?"
+  );
+  updateMatch.run(matchId, player2Id);
+}
+
+function checkName(name) {
+  const checkName = db.prepare(`
+    SELECT 1 FROM Players WHERE name = ?
+    `);
+
+  const player = checkName.get(name);
+  if (player) {
+    return `un Joueur avec le nom ${name} Exist déja`;
+  } else {
+    return "available";
+  }
+}
 
 module.exports = {
   initialize_db,
@@ -167,6 +469,15 @@ module.exports = {
   fetch_totalAmount_month,
   add_tournament,
   fetch_tournaments,
-  fetch_tournament_edit,
-  fetch_tournament_manage,
+  fetch_tournament,
+  fetch_leaderboard,
+  delete_tournament,
+  add_to_leaderboard,
+  delete_from_leaderboard,
+  delete_all_from_leaderboard,
+  add_match,
+  update_match_p1,
+  update_match_p2,
+  checkName,
+  fetch_players,
 };
