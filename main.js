@@ -2,6 +2,7 @@ const { app, BrowserWindow, dialog, ipcMain } = require("electron");
 const path = require("path");
 const db = require("./db_handler.js");
 const { register } = require("module");
+const { match } = require("assert");
 let mainWindow;
 const createWindow = () => {
   mainWindow = new BrowserWindow({
@@ -17,7 +18,7 @@ const createWindow = () => {
     },
   });
 
-  mainWindow.loadFile("Pages/manage_tournament.html");
+  mainWindow.loadFile("Pages/tournaments.html");
   mainWindow.maximize();
   mainWindow.show();
   mainWindow.webContents.openDevTools();
@@ -95,16 +96,16 @@ ipcMain.on(
   }
 );
 
-
-ipcMain.on(
-  "fetch-players",
-  (event, tournamentId) => {
-    const allWindows = BrowserWindow.getAllWindows();
-    allWindows.forEach((win) => {
-      win.webContents.send("get-players", tournamentId, db.fetch_players(tournamentId));
-    });
-  }
-);
+ipcMain.on("fetch-players", (event, tournamentId) => {
+  const allWindows = BrowserWindow.getAllWindows();
+  allWindows.forEach((win) => {
+    win.webContents.send(
+      "get-players",
+      tournamentId,
+      db.fetch_players(tournamentId)
+    );
+  });
+});
 
 ipcMain.on(
   "add-match",
@@ -182,6 +183,42 @@ ipcMain.on("delete-all-from-leaderboard", (event, tournamentId) => {
     win.webContents.send("deleted-all-from-leaderboard");
   });
 });
+
+ipcMain.on("update-match-winner", (event, matchId, winnerId) => {
+  try {
+    db.setMatchWinner(matchId, winnerId);
+  } catch (e) {
+      throw new Error(e)
+    
+  }
+});
+
+ipcMain.on("update-next-match", (event, nextMatchId, playerPosition, playerId) => {
+  if (playerPosition === 1) {
+    try {
+      db.update_match_p1(nextMatchId, playerId);
+      console.log("gg")
+    } catch (e) {
+      throw new Error(e)
+    }
+  }
+  if (playerPosition === 2) {
+    try {
+      db.update_match_p2(nextMatchId, playerId);
+    } catch (e) {
+      throw new Error(e)
+      
+    }
+  }
+});
+
+ipcMain.on('update-score', (event, matchId, playerNumber, newScore) => {
+  db.updateScore(matchId, playerNumber, newScore)
+})
+
+ipcMain.on('update-ancestor', (event, matchId, ancestorPosition, ancestorId) => {
+  db.updateAncestor(matchId, ancestorPosition, ancestorId)
+})
 
 // ipcMain.on('', (event) => {
 

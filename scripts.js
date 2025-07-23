@@ -100,11 +100,134 @@ window.myAPI.getTournament((data) => {
     data["tournament"]["name"] + " ( " + "Eliminatoire" + " ) ";
   bracket.innerHTML = "";
   let round_1 = [];
+  let round_2 = [];
+  let round_3 = [];
+  let round_4 = [];
+  let round_5 = [];
+  let round_6 = [];
+  let round_7 = [];
+  let rounds = [];
+  // let spaces_1 = [1, 5, 14, 30, 60, 60, 60];
+  // let spaces_2 = [2, 6, 13, 30, 65, 82, 120];
+  let spaces_1 = [1, 5, 13, 30, 61, 125, 0];
+  let spaces_2 = [2, 6, 14, 29, 62, 0, 0];
   for (let i = 0; i < data.matches.length; i++) {
     if (data.matches[i].round === 1) round_1.push(data.matches[i]);
+    if (data.matches[i].round === 2) round_2.push(data.matches[i]);
+    if (data.matches[i].round === 3) round_3.push(data.matches[i]);
+    if (data.matches[i].round === 4) round_4.push(data.matches[i]);
+    if (data.matches[i].round === 5) round_5.push(data.matches[i]);
+    if (data.matches[i].round === 6) round_6.push(data.matches[i]);
+    if (data.matches[i].round === 7) round_7.push(data.matches[i]);
   }
-  console.log(round_1);
+
+  rounds.push(round_1);
+  rounds.push(round_2);
+  rounds.push(round_3);
+  rounds.push(round_4);
+  rounds.push(round_5);
+  rounds.push(round_6);
+  rounds.push(round_7);
+  console.log("round1: ", round_1);
+  console.log("round2: ", round_2);
+  console.log("round3: ", round_3);
+  console.log("round4: ", round_4);
+  console.log("round5: ", round_5);
+  console.log("round6: ", round_6);
+  console.log("round7: ", round_7);
+  bracket.innerHTML = "";
+  for (let u = 0; u < 7; u++) {
+    let nextRound = (u<6)?rounds[u+1]:[]
+    if(rounds[u].length > 0)
+    buildRound(data.tournament.tournamentId, bracket, rounds[u], nextRound, u + 1, spaces_1[u], spaces_2[u]);
+    if(nextRound.length > 0)
+    for(let i = 0;i<rounds[u].length;i+=2){
+      window.myAPI.updateAncestor(nextRound[Math.floor(i/2)].matchId, 1, rounds[u][i].matchId)
+      window.myAPI.updateAncestor(nextRound[Math.floor(i/2)].matchId, 2, rounds[u][i+1].matchId)
+    }
+  }
 });
+//TODO: players not updating using the trigger in next match
+
+function buildRound(tournamentId, bracket, round,nextRound, number, spacer_1Count, spacer_2Count) {
+  bracket.innerHTML += `<div class="round" id=round_${number} style="border-left: 1vh solid gray;"></div>`;
+  const roundEl = document.getElementById(`round_${number}`);
+  roundEl.innerHTML += `<p style="font-size:2.4vh; color: #808080; font-weight:700;">Tour ${number}</p>`
+  for (let i = 0; i < round.length; i += 2) {
+    if (round.length === 1) {
+      roundEl.innerHTML += `<match-el player1Score="${round[i].player1Score}" player2Score="${round[i].player2Score}" tournamentId="${tournamentId}" winnerId="${round[i].winnerId}" player_1="${round[i].player1Name}" player_2="${round[i].player2Name}" player_1Id="${round[i].player1Id}" player_2Id="${round[i].player2Id}" matchId="${round[i].matchId}"></match-el>`;
+    } else {
+      roundEl.innerHTML += `<match-el player1Score="${round[i].player1Score}" player2Score="${round[i].player2Score}" tournamentId="${tournamentId}" winnerId="${round[i].winnerId}" player_1="${round[i].player1Name}" player_2="${round[i].player2Name}" player_1Id="${round[i].player1Id}" player_2Id="${round[i].player2Id}" matchId="${round[i].matchId}" nextMatch="${nextRound[Math.floor(i / 2)].matchId}"></match-el>`;
+
+      for (let s = 0; s < spacer_1Count; s++) {
+        roundEl.innerHTML += `<div class="spacer"></div>`;
+      }
+      if (Number(i + 1) === Number(round.length - 1)) {
+        //to avoid adding spaces after the last match is added
+        roundEl.innerHTML += `<match-el player1Score="${round[i+1].player1Score}" player2Score="${round[i+1].player2Score}" tournamentId="${tournamentId}" winnerId="${round[i+1].winnerId}" player_1="${
+          round[i + 1].player1Name
+        }" player_2="${round[i + 1].player2Name}" matchId="${round[i+1].matchId}" nextMatch="${nextRound[Math.floor(Number(i+1) / 2)].matchId}" player_1Id="${round[i+1].player1Id}" player_2Id="${round[i+1].player2Id}"></match-el>`;
+      } else {
+        roundEl.innerHTML += `<match-el player1Score="${round[i+1].player1Score}" player2Score="${round[i+1].player2Score}" tournamentId="${tournamentId}" winnerId="${round[i+1].winnerId}" player_1="${
+          round[i + 1].player1Name
+        }" player_2="${round[i + 1].player2Name}" matchId="${round[i+1].matchId}" nextMatch="${nextRound[Math.floor(Number(i+1) / 2)].matchId}" player_1Id="${round[i+1].player1Id}" player_2Id="${round[i+1].player2Id}"></match-el>`;
+        for (let s = 0; s < spacer_2Count; s++) {
+          roundEl.innerHTML += '<div class="spacer"></div>';
+        }
+      }
+    }
+  }
+}
+
+function updateMatch(tournamentId, matchId, winnerId, nextMatchId, playerPosition, score){
+  //update match
+  //update next match
+  console.log("tournamentId:",tournamentId, "matchId:", matchId, "winnerId:",winnerId ,"nextMatchId:",nextMatchId, "playerPosition:",playerPosition, "score:",score)
+  // window.myAPI.updateMatchWinner(matchId, winnerId)
+  // window.myAPI.updateNextMatch(nextMatchId, playerPosition, winnerId)
+  const scoreModal = document.getElementById('scoreModal')
+  const input = document.getElementById('scoreInput')
+  const output = document.getElementById('scoreOutput')
+  const saveScore = document.getElementById('saveScore')
+  const scoreInput = document.getElementById('scoreInputField')
+  const scoreOutput = document.getElementById('scoreOutputField')
+  const ok = document.getElementById('ok')
+  scoreModal.classList.remove('hidden')
+  if(score > -1){
+    output.classList.remove('hidden')
+    input.classList.add('hidden')
+    scoreOutput.textContent = score
+    if(ok)
+      ok.addEventListener('click', () => {
+    output.classList.add('hidden')
+    scoreModal.classList.add('hidden')
+  })
+  
+}else{
+  output.classList.add('hidden')
+  input.classList.remove('hidden')
+  if(saveScore && scoreInput){
+    saveScore.addEventListener('click', () => {
+      if(Number(scoreInput.value) > -1){
+        window.myAPI.updateScore(matchId, playerPosition, scoreInput.value)
+        scoreInput.classList.remove('required')
+        console.log(scoreInput.value)
+        input.classList.add('hidden')
+        scoreModal.classList.add('hidden')
+        scoreInput.value = 0
+        scoreInput.textContent = 0
+        location.reload()
+        // window.myAPI.fetchTournament(tournamentId)
+        }else{
+          scoreInput.classList.add('required')
+        }
+      })
+    }
+  }
+
+  
+
+}
 
 window.myAPI.getLeaderboard((data) => {
   console.log("Classement");
@@ -171,19 +294,29 @@ window.myAPI.addTournamentReply((tournamentId) => {
 });
 
 window.myAPI.getPlayers((tournamentId, playersList) => {
-  console.log("players:",tournamentId,  playersList);
-  for (let i = 0; i < parseInt(playersList.length); i+=2) {
-    console.log('index ', i, " ", playersList[i])
-    console.log('index ', i+1, " ", playersList[i+1])
+  console.log("players:", tournamentId, playersList);
+  for (let i = 0; i < parseInt(playersList.length); i += 2) {
+    console.log("index ", i, " ", playersList[i]);
+    console.log("index ", i + 1, " ", playersList[i + 1]);
     window.myAPI.addMatch(
       tournamentId,
       1,
       playersList[i].playerId,
-      playersList[i+1].playerId,
+      playersList[i + 1].playerId,
       null,
       null,
       null
     );
+  }
+  mCount = playersList.length / 2;
+  rCount = 1;
+  //TODO: check if this works fine.. later on: i think it works
+  while (mCount > 1) {
+    mCount = mCount / 2;
+    rCount++;
+    for (let i = 0; i < mCount; i++) {
+      window.myAPI.addMatch(tournamentId, rCount, null, null, null, null, null);
+    }
   }
 });
 
@@ -405,7 +538,10 @@ document.addEventListener("DOMContentLoaded", () => {
         name.classList.remove("required");
       }
       if (mode.value === "E")
-        if (playersCount.value === "" || !Number.isInteger(Math.log2(playersCount.value))) {
+        if (
+          playersCount.value === "" ||
+          !Number.isInteger(Math.log2(playersCount.value))
+        ) {
           playersCount.classList.add("required");
         } else {
           playersCount.classList.remove("required");
@@ -443,7 +579,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
       let tournamentPlayers = [];
 
-      if (playersFilled && infoFilled && Number.isInteger(Math.log2(playersCount.value))) {
+      if (
+        playersFilled &&
+        infoFilled &&
+        Number.isInteger(Math.log2(playersCount.value))
+      ) {
         console.log("Tournament Info:");
         console.log("Name:", name.value);
         console.log("Players:", playersCount.value);

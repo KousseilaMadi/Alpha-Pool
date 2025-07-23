@@ -168,5 +168,14 @@ contextBridge.exposeInMainWorld("myAPI", {
     ),
   fetchPlayers: (tournamentId) =>
     ipcRenderer.send("fetch-players", tournamentId),
-  getPlayers: (callback)=>ipcRenderer.on('get-players', (_, tournamentId, data) => callback(tournamentId, data)) 
+  getPlayers: (callback)=>ipcRenderer.on('get-players', (_, tournamentId, data) => callback(tournamentId, data)),
+  updateMatchWinner: (matchId, winnerId)=>
+    ipcRenderer.send('update-match-winner', matchId, winnerId),
+  updateNextMatch: (nextMatchId, playerPosition, playerId)=> ipcRenderer.send('update-next-match', nextMatchId, playerPosition, playerId),
+  updateScore: (matchId, playerNumber, newScore) => {
+    ipcRenderer.send('update-score', matchId, playerNumber, newScore)
+  },
+  updateAncestor: (matchId, ancestorPosition, ancestorId)=>{
+    ipcRenderer.send('update-ancestor', matchId, ancestorPosition, ancestorId)
+  }
 });

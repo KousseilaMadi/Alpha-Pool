@@ -4,6 +4,14 @@ class Match extends HTMLElement{
         const el = this.attachShadow({mode:'open'})
         let player_1 = this.getAttribute('player_1')
         let player_2 = this.getAttribute('player_2')
+        let nextMatch = this.getAttribute('nextMatch')
+        let matchId = this.getAttribute('matchId')
+        let player_1Id = this.getAttribute('player_1Id')
+        let player_2Id = this.getAttribute('player_2Id')
+        let player_1Score = this.getAttribute('player1Score')
+        let player_2Score = this.getAttribute('player2Score')
+        let winnerId = this.getAttribute('winnerId')
+        let tournamentId = this.getAttribute('tournamentId')
 
         el.innerHTML= `
         <style>
@@ -36,7 +44,7 @@ class Match extends HTMLElement{
           border-radius: 0vh 1vh 1vh 0vh;
         }
         .player:hover{
-          background-color: rgb(94, 255, 0);
+          background-color: var(--button-hover);
         }
         .vs{
           flex: 0 0 auto;
@@ -46,11 +54,17 @@ class Match extends HTMLElement{
           font-weight: 600;
           font-size: 1.8vh;
         }
+        .winner{
+        background-color:#88ff88;
+        }
+        .loser{
+          text-color:#ababab;
+        background-color:#cd7878df;}
         </style>
         <div class="match">
-            <button class="player leftPlayer" id="">${player_1}</button>
+            <button ${(Number(player_1Id) === Number(winnerId))?`class="player leftPlayer winner"`:(Number(player_2Id) === Number(winnerId))?`class="player leftPlayer loser"`: `class="player leftPlayer"`} onclick="updateMatch(${tournamentId}, ${matchId}, ${player_1Id}, ${nextMatch}, 1, ${player_1Score})">${player_1}</button>
             <div class="vs">VS</div>
-            <button class="player rightPlayer" id="">${player_2}</button>
+            <button ${(Number(player_2Id) === Number(winnerId))?`class="player rightPlayer winner"`:(Number(player_1Id) === Number(winnerId))?`class="player rightPlayer loser"`: `class="player rightPlayer"`} onclick="updateMatch(${tournamentId}, ${matchId}, ${player_2Id}, ${nextMatch}, 2, ${player_2Score})">${player_2}</button>
         </div>
         `
     }

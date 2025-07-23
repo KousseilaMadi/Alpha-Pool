@@ -3,7 +3,7 @@ const db = new Database("AlphaPool");
 
 function initialize_db() {
   //edit this exec according to the form of the db later
-  db.pragma("foreign_keys = ON")
+  db.pragma("foreign_keys = ON");
   db.exec(`
         CREATE TABLE IF NOT EXISTS Sessions (
             sessionId INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -58,6 +58,8 @@ function initialize_db() {
             round INTEGER DEFAULT 1,
             player1Id INTEGER,
             player2Id INTEGER,
+            player1Score INTEGER DEFAULT -1,
+            player2Score INTEGER DEFAULT -1,
             winnerId INTEGER,
             ancestorMatch1Id INTEGER,
             ancestorMatch2Id INTEGER,
@@ -69,6 +71,45 @@ function initialize_db() {
             FOREIGN KEY (ancestorMatch2Id) REFERENCES Matches(matchId) ON DELETE CASCADE
         );
         
+        -- Create a trigger that fires AFTER a match is updated (after scores are set)
+        CREATE TRIGGER IF NOT EXISTS update_winner_and_propagate
+        AFTER UPDATE ON Matches
+        FOR EACH ROW
+        WHEN NEW.player1Score != -1 AND NEW.player2Score  != -1
+        BEGIN
+          
+          -- 1. Set the winnerId based on which player has a higher score
+          UPDATE Matches
+          SET winnerId = 
+            CASE 
+              WHEN NEW.player1Score > NEW.player2Score THEN NEW.player1Id
+              WHEN NEW.player2Score > NEW.player1Score THEN NEW.player2Id
+              ELSE NULL -- In case of a tie
+            END
+          WHERE matchId = NEW.matchId;
+          
+          -- 2. Propagate winnerId to the next match if this match is ancestorMatch1
+          UPDATE Matches
+          SET player1Id = 
+            CASE 
+              WHEN NEW.player1Score > NEW.player2Score THEN NEW.player1Id
+              WHEN NEW.player2Score > NEW.player1Score THEN NEW.player2Id
+              ELSE NULL
+            END
+          WHERE ancestorMatch1Id = NEW.matchId;
+          
+          -- 3. Propagate winnerId to the next match if this match is ancestorMatch2
+          UPDATE Matches
+          SET player2Id = 
+            CASE 
+              WHEN NEW.player1Score > NEW.player2Score THEN NEW.player1Id
+              WHEN NEW.player2Score > NEW.player1Score THEN NEW.player2Id
+              ELSE NULL
+            END
+          WHERE ancestorMatch2Id = NEW.matchId;
+          
+        END;
+
         
         `);
   console.log("db initialized .");
@@ -189,7 +230,25 @@ function fetch_tournament(id) {
   const getPlayers = db.prepare(
     `SELECT Players.playerId, Players.name FROM Players JOIN TournamentPlayers ON Players.playerId = TournamentPlayers.playerId WHERE TournamentPlayers.tournamentId = ?`
   );
-  const getMatches = db.prepare(`SELECT * FROM Matches WHERE tournamentId = ?`);
+  const getMatches = db.prepare(`SELECT 
+      m.matchId,
+      m.tournamentId,
+      m.round,
+      m.player1Score,
+      m.player2Score,
+      m.player1Id,
+      p1.name AS player1Name,
+      m.player2Id,
+      p2.name AS player2Name,
+      m.winnerId,
+      pw.name AS winnerName,
+      m.ancestorMatch1Id,
+      m.ancestorMatch2Id
+    FROM Matches m
+    LEFT JOIN Players p1 ON m.player1Id = p1.playerId
+    LEFT JOIN Players p2 ON m.player2Id = p2.playerId
+    LEFT JOIN Players pw ON m.winnerId = pw.playerId
+    WHERE m.tournamentId = ?`);
   const fetch = db.transaction((id) => {
     const tournament = getTournament.get(id);
     const players = getPlayers.all(id);
@@ -434,16 +493,16 @@ function fetch_players(tournamentId) {
 
 function update_match_p1(matchId, player1Id) {
   const updateMatch = db.prepare(
-    "UPDATE Matches WHERE matchId = ? SET player1Id = ?"
+    "UPDATE Matches SET player1Id = ? WHERE matchId = ?"
   );
-  updateMatch.run(matchId, player1Id);
+  updateMatch.run(player1Id, matchId);
 }
 
 function update_match_p2(matchId, player2Id) {
   const updateMatch = db.prepare(
-    "UPDATE Matches WHERE matchId = ? SET player2Id = ?"
+    "UPDATE Matches SET player2Id = ? WHERE matchId = ?"
   );
-  updateMatch.run(matchId, player2Id);
+  updateMatch.run(player2Id, matchId);
 }
 
 function checkName(name) {
@@ -457,6 +516,41 @@ function checkName(name) {
   } else {
     return "available";
   }
+}
+
+function setMatchWinner(matchId, playerId) {
+  const updateMatch = db.prepare(
+    "UPDATE Matches SET winnerId = ? WHERE matchId = ?"
+  );
+  updateMatch.run(playerId, matchId);
+}
+
+function updateScore(matchId, playerNumber, newScore){
+  const updateScore1 = db.prepare(`UPDATE Matches SET player1Score = ? WHERE matchId = ?`)
+  const updateScore2 = db.prepare(`UPDATE Matches SET player2Score = ? WHERE matchId = ?`)
+  
+
+
+  if(playerNumber === 1)
+    updateScore1.run(newScore, matchId)
+  if(playerNumber === 2)
+    updateScore2.run(newScore, matchId)
+
+  // console.log(db.exec(`SELECT * FROM Matches WHERE ancestorMatch1Id = ? OR ancestorMatch2Id = ?;`).all(matchId, matchId))
+
+}
+
+function updateAncestor(matchId, ancestorPosition, ancestorId){
+  const updateAnc1 = db.prepare(`UPDATE Matches SET ancestorMatch1Id = ? WHERE matchId = ?`)
+  const updateAnc2 = db.prepare(`UPDATE Matches SET ancestorMatch2Id = ? WHERE matchId = ?`)
+
+  if(ancestorPosition === 1)
+    updateAnc1.run(ancestorId, matchId)
+
+  if(ancestorPosition === 2)
+    updateAnc2.run(ancestorId, matchId)
+
+
 }
 
 module.exports = {
@@ -480,4 +574,7 @@ module.exports = {
   update_match_p2,
   checkName,
   fetch_players,
+  setMatchWinner,
+  updateScore,
+  updateAncestor
 };

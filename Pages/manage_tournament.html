@@ -200,10 +200,46 @@
         transition: 0.5s ease;
         border: solid 2px red;
       }
+      .modal{
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+      }
+      .hidden{
+        display: none;
+      }
+      .scoreInputContainer{
+        width: 45vh;
+        background: var(--card-color);
+        height: 20vh;
+        border-radius: 2vh;
+        display: flex;
+        align-items: center;
+        justify-content: space-evenly;
+      }
+      .sauvgarderButton{
+        height: 5vh; 
+        width: 13vh; 
+        border-radius: 1vh;
+        background-color: var(--button-color);
+        border: none;
+        font-size: 2vh;
+        transition: .5s ease;
+      }
+      .sauvgarderButton:hover{
+        background-color: var(--button-hover);
+      }
     </style>
     <div class="container">
       <side-bar selected="tournaments"></side-bar>
-      <div class="main" style="overflow-y: scroll; overflow-x: scroll">
+      <div class="main" style="overflow-y: scroll; overflow-x: scroll; width: 8000px; padding-left: 500px; padding-right: 200px;">
         <div class="info">
           <h1
             style="
@@ -214,6 +250,19 @@
             "
             id="tournamentTitle"
           ></h1>
+        </div>
+        <div id="scoreModal" class="modal hidden">
+          <div class="scoreInputContainer hidden" id="scoreInput">
+            <input id="scoreInputField" style="height: 5vh; width: 16vh; padding: 0; padding-left: 1.2vh;  margin: 0; background-color: var(--highlight-color);" placeholder="Score" type="number">
+            <button class="sauvgarderButton" id="saveScore">Sauvgarder</button>
+          </div>
+          
+          <div class="scoreInputContainer hidden" id="scoreOutput">
+            <h1 style="color: var(--text-color);">Score:</h1>
+            <h1 style="color: var(--text-color);" id="scoreOutputField">0</h1>
+            <button class="sauvgarderButton" id="ok">Ok</button>
+          </div>
+          
         </div>
 
         <div class="leaderboardContainer" id="leaderboardContainer">
@@ -242,76 +291,6 @@
           </div>
         </div>
         <div class="bracket" id="bracket">
-<!-- round 1 -->
-<div class="round">
-    <match-el player_1="Koussseila Madi" player_2="Seddar Abdelhadi"></match-el>
-    <div class="spacer "></div>
-    <match-el player_1="Koussseila Madi" player_2="Seddar Abdelhadi"></match-el>
-    <div class="spacer "></div>
-    <div class="spacer "></div>
-    <match-el player_1="Koussseila Madi" player_2="Seddar Abdelhadi"></match-el>
-    <div class="spacer "></div>
-    <match-el player_1="Koussseila Madi" player_2="Seddar Abdelhadi"></match-el>
-    <div class="spacer "></div>
-    <div class="spacer "></div>
-    <match-el player_1="Koussseila Madi" player_2="Seddar Abdelhadi"></match-el>
-    <div class="spacer "></div>
-    <match-el player_1="Koussseila Madi" player_2="Seddar Abdelhadi"></match-el>
-    <div class="spacer "></div>
-    <div class="spacer "></div>
-    <match-el player_1="Koussseila Madi" player_2="Seddar Abdelhadi"></match-el>
-    <div class="spacer "></div>
-    <match-el player_1="Koussseila Madi" player_2="Seddar Abdelhadi"></match-el>
-  </div>
-  <!-- round 2 -->
-   <div class="round">
-
-     <match-el player_1="Koussseila Madi" player_2="Seddar Abdelhadi"></match-el>
-     <div class="spacer "></div>
-     <div class="spacer "></div>
-     <div class="spacer "></div>
-     <div class="spacer "></div>
-     <div class="spacer "></div>
-     <match-el player_1="Koussseila Madi" player_2="Seddar Abdelhadi"></match-el>
-     <div class="spacer "></div>
-     <div class="spacer "></div>
-     <div class="spacer "></div>
-     <div class="spacer "></div>
-     <div class="spacer "></div>
-     <div class="spacer "></div>
-     <match-el player_1="Koussseila Madi" player_2="Seddar Abdelhadi"></match-el>
-     <div class="spacer "></div>
-     <div class="spacer "></div>
-     <div class="spacer "></div>
-     <div class="spacer "></div>
-     <div class="spacer "></div>
-     <match-el player_1="Koussseila Madi" player_2="Seddar Abdelhadi"></match-el>
-    </div>
-
-    <div class="round">
-     <match-el player_1="Koussseila Madi" player_2="Seddar Abdelhadi"></match-el>
-
-     <div class="spacer "></div>
-     <div class="spacer "></div>
-     <div class="spacer "></div>
-     <div class="spacer "></div>
-     <div class="spacer "></div>
-     <div class="spacer "></div>
-     <div class="spacer "></div>
-     <div class="spacer "></div>
-     <div class="spacer "></div>
-     <div class="spacer "></div>
-     <div class="spacer "></div>
-     <div class="spacer "></div>
-     <div class="spacer "></div>
-     <match-el player_1="Koussseila Madi" player_2="Seddar Abdelhadi"></match-el>
-
-    </div>
-
-
-    <div class="round">
-     <match-el player_1="Koussseila Madi" player_2="Seddar Abdelhadi"></match-el>
-    </div>
       </div>
     </div>
   </body>
