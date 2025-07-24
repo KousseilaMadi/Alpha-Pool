@@ -3,6 +3,9 @@ const path = require("path");
 const db = require("./db_handler.js");
 const { register } = require("module");
 const { match } = require("assert");
+const generatePDF = require('./generatePDF')
+
+
 let mainWindow;
 const createWindow = () => {
   mainWindow = new BrowserWindow({
@@ -11,14 +14,14 @@ const createWindow = () => {
     width: 800,
     height: 600,
     webPreferences: {
-      devTools: true,
+      devTools: false,
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
       nodeIntegration: false,
     },
   });
 
-  mainWindow.loadFile("Pages/tournaments.html");
+  mainWindow.loadFile("Pages/index.html");
   mainWindow.maximize();
   mainWindow.show();
   mainWindow.webContents.openDevTools();
@@ -220,9 +223,19 @@ ipcMain.on('update-ancestor', (event, matchId, ancestorPosition, ancestorId) => 
   db.updateAncestor(matchId, ancestorPosition, ancestorId)
 })
 
-// ipcMain.on('', (event) => {
+ipcMain.on('generate-pdf', (event, data, filePath) => {
+  generatePDF(data, filePath)
+})
 
-// })
+ipcMain.handle('save-pdf-dialog', async () => {
+  const { filePath, canceled } = await dialog.showSaveDialog({
+    title: 'Enregistrer Pdf',
+    defaultPath: 'tournoi.pdf',
+    filters: [{ name: 'fichiers Pdf', extensions: ['pdf'] }],
+  });
+
+  return canceled ? null : filePath;
+});
 
 ipcMain.on("navigate-to", (event, page, id, mode) => {
   const pageTree = {

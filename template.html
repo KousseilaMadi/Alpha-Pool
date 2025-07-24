@@ -1,0 +1,374 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Tournament Bracket</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        height: 50%;
+        width: 100%;
+        justify-content: center;
+        align-items: center;
+        background-color: #fbfbfb;
+      }
+      .title {
+        font-size: 3vh;
+        text-align: center;
+      }
+      .bracket {
+        display: flex;
+        gap: 2vh;
+        align-items: center;
+        justify-content: center;
+      }
+      .round {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+        background-color: #d8d8d8;
+        padding-top: 1vh;
+        padding-bottom: 1vh;
+        padding-left: 1vh;
+      }
+      .match {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background-color: #f2f2f2;
+        border-radius: 0.2vh;
+        width: 21vh;
+        height: 6vh;
+        justify-content: space-around;
+      }
+      .player {
+        height: 2.8vh;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        flex-direction: row;
+      }
+      .playerName {
+        font-size: small;
+        width: 85%;
+        padding-left: 1vh;
+        background-color: #ebeaeb;
+        height: 2.8vh;
+      }
+      .playerScore {
+        font-size: small;
+        font-weight: 600;
+        width: 15%;
+        text-align: center;
+        background-color: #35789e;
+        color: #f4f4f4;
+        height: 2.8vh;
+      }
+      .smallSpacer {
+        height: 1vh;
+      }
+      .bigSpacer {
+        height: 7vh;
+      }
+      .winner {
+        background-color: #00ff0040;
+      }
+      .loser {
+        background-color: #ff000040;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="title">Nom du tournoi</div>
+
+    <div class="bracket">
+      <!-- Round 1 -->
+      <div class="round">
+          <h2>tour 1</h2>
+
+        <div class="match">
+          <div class="player">
+            <div class="playerName loser">Kousseila Madi</div>
+            <div class="playerScore">24</div>
+          </div>
+
+          <div class="player">
+            <div class="playerName winner">Seddar Abdelhadi</div>
+            <div class="playerScore">12</div>
+          </div>
+        </div>
+
+        <div class="smallSpacer"></div>
+
+        <div class="match">
+          <div class="player">
+            <div class="playerName">Kousseila Madi</div>
+            <div class="playerScore">24</div>
+          </div>
+
+          <div class="player">
+            <div class="playerName">Seddar Abdelhadi</div>
+            <div class="playerScore">12</div>
+          </div>
+        </div>
+        <div class="smallSpacer"></div>
+
+        <div class="match">
+          <div class="player">
+            <div class="playerName">Kousseila Madi</div>
+            <div class="playerScore">24</div>
+          </div>
+
+          <div class="player">
+            <div class="playerName">Seddar Abdelhadi</div>
+            <div class="playerScore">12</div>
+          </div>
+        </div>
+
+        <div class="smallSpacer"></div>
+
+        <div class="match">
+          <div class="player">
+            <div class="playerName">Kousseila Madi</div>
+            <div class="playerScore">24</div>
+          </div>
+
+          <div class="player">
+            <div class="playerName">Seddar Abdelhadi</div>
+            <div class="playerScore">12</div>
+          </div>
+        </div>
+
+        <div class="smallSpacer"></div>
+
+        <div class="match">
+          <div class="player">
+            <div class="playerName">Kousseila Madi</div>
+            <div class="playerScore">24</div>
+          </div>
+
+          <div class="player">
+            <div class="playerName">Seddar Abdelhadi</div>
+            <div class="playerScore">12</div>
+          </div>
+        </div>
+
+        <div class="smallSpacer"></div>
+
+        <div class="match">
+          <div class="player">
+            <div class="playerName">Kousseila Madi</div>
+            <div class="playerScore">24</div>
+          </div>
+
+          <div class="player">
+            <div class="playerName">Seddar Abdelhadi</div>
+            <div class="playerScore">12</div>
+          </div>
+        </div>
+        <div class="smallSpacer"></div>
+
+        <div class="match">
+          <div class="player">
+            <div class="playerName">Kousseila Madi</div>
+            <div class="playerScore">24</div>
+          </div>
+
+          <div class="player">
+            <div class="playerName">Seddar Abdelhadi</div>
+            <div class="playerScore">12</div>
+          </div>
+        </div>
+
+        <div class="smallSpacer"></div>
+
+        <div class="match">
+          <div class="player">
+            <div class="playerName">Kousseila Madi</div>
+            <div class="playerScore">24</div>
+          </div>
+
+          <div class="player">
+            <div class="playerName">Seddar Abdelhadi</div>
+            <div class="playerScore">12</div>
+          </div>
+        </div>
+
+      </div>
+
+      
+      <div class="round">
+
+        <div class="match">
+          <div class="player">
+            <div class="playerName">Kousseila Madi</div>
+            <div class="playerScore">24</div>
+          </div>
+
+          <div class="player">
+            <div class="playerName">Seddar Abdelhadi</div>
+            <div class="playerScore">12</div>
+          </div>
+        </div>
+
+        <div class="smallSpacer"></div>
+        <div class="bigSpacer"></div>
+
+        <div class="match">
+          <div class="player">
+            <div class="playerName">Kousseila Madi</div>
+            <div class="playerScore">24</div>
+          </div>
+
+          <div class="player">
+            <div class="playerName">Seddar Abdelhadi</div>
+            <div class="playerScore">12</div>
+          </div>
+        </div>
+        
+        <div class="smallSpacer"></div>
+        <div class="bigSpacer"></div>
+
+        <div class="match">
+          <div class="player">
+            <div class="playerName">Kousseila Madi</div>
+            <div class="playerScore">24</div>
+          </div>
+
+          <div class="player">
+            <div class="playerName">Seddar Abdelhadi</div>
+            <div class="playerScore">12</div>
+          </div>
+        </div>
+
+        <div class="smallSpacer"></div>
+        <div class="bigSpacer"></div>
+
+
+        <div class="match">
+          <div class="player">
+            <div class="playerName">Kousseila Madi</div>
+            <div class="playerScore">24</div>
+          </div>
+
+          <div class="player">
+            <div class="playerName">Seddar Abdelhadi</div>
+            <div class="playerScore">12</div>
+          </div>
+        </div>
+
+
+      </div>
+
+
+      <div class="round">
+
+        <div class="match">
+          <div class="player">
+            <div class="playerName">Kousseila Madi</div>
+            <div class="playerScore">24</div>
+          </div>
+
+          <div class="player">
+            <div class="playerName">Seddar Abdelhadi</div>
+            <div class="playerScore">12</div>
+          </div>
+        </div>
+
+        <div class="smallSpacer"></div>
+        <div class="bigSpacer"></div>
+        <div class="bigSpacer"></div>
+        <div class="bigSpacer"></div>
+
+        <div class="match">
+          <div class="player">
+            <div class="playerName">Kousseila Madi</div>
+            <div class="playerScore">24</div>
+          </div>
+
+          <div class="player">
+            <div class="playerName">Seddar Abdelhadi</div>
+            <div class="playerScore">12</div>
+          </div>
+        </div>
+        <div class="smallSpacer"></div>
+        <div class="bigSpacer"></div>
+        <div class="bigSpacer"></div>
+        <div class="bigSpacer"></div>
+        
+        <div class="match">
+          <div class="player">
+            <div class="playerName">Kousseila Madi</div>
+            <div class="playerScore">24</div>
+          </div>
+
+          <div class="player">
+            <div class="playerName">Seddar Abdelhadi</div>
+            <div class="playerScore">12</div>
+          </div>
+        </div>
+
+        <div class="smallSpacer"></div>
+        <div class="bigSpacer"></div>
+        <div class="bigSpacer"></div>
+        <div class="bigSpacer"></div>
+
+        <div class="match">
+          <div class="player">
+            <div class="playerName">Kousseila Madi</div>
+            <div class="playerScore">24</div>
+          </div>
+
+          <div class="player">
+            <div class="playerName">Seddar Abdelhadi</div>
+            <div class="playerScore">12</div>
+          </div>
+        </div>
+        
+
+      </div>
+
+
+      <div class="round">
+
+        <div class="match">
+          <div class="player">
+            <div class="playerName">Kousseila Madi</div>
+            <div class="playerScore">24</div>
+          </div>
+
+          <div class="player">
+            <div class="playerName">Seddar Abdelhadi</div>
+            <div class="playerScore">12</div>
+          </div>
+        </div>
+
+        <div class="smallSpacer"></div>
+        <div class="bigSpacer"></div>
+        <div class="bigSpacer"></div>
+        <div class="bigSpacer"></div>
+        <div class="bigSpacer"></div>
+        <div class="bigSpacer"></div>
+        <div class="bigSpacer"></div>
+        <div class="bigSpacer"></div>
+
+        <div class="match">
+          <div class="player">
+            <div class="playerName">Kousseila Madi</div>
+            <div class="playerScore">24</div>
+          </div>
+
+          <div class="player">
+            <div class="playerName">Seddar Abdelhadi</div>
+            <div class="playerScore">12</div>
+          </div>
+        </div>
+        
+
+      </div>
+
+
+    </div>
+  </body>
+</html>

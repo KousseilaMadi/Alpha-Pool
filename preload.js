@@ -53,14 +53,12 @@ class Timer {
 
   getFormattedTime() {
     const totalSeconds = Math.floor(this.elapsed / 1000);
-    const minutes = Math.floor(totalSeconds / 60)
-      .toString()
+    const hours = Math.floor(totalSeconds / 3600).toString()
       .padStart(2, "0");
-    const seconds = (totalSeconds % 60).toString().padStart(2, "0");
-    const hours = Math.floor(minutes / 60)
-      .toString()
+    const minutes = Math.floor((totalSeconds % 3600) / 60).toString()
       .padStart(2, "0");
-    // const tenths = Math.floor((this.elapsed % 1000) / 100);
+    const seconds = (totalSeconds % 60).toString()
+      .padStart(2, "0");
     return `${hours}:${minutes}:${seconds}`;
   }
 }
@@ -177,5 +175,7 @@ contextBridge.exposeInMainWorld("myAPI", {
   },
   updateAncestor: (matchId, ancestorPosition, ancestorId)=>{
     ipcRenderer.send('update-ancestor', matchId, ancestorPosition, ancestorId)
-  }
+  },
+  generatePdf: (data, filePath)=> ipcRenderer.send('generate-pdf', data, filePath),
+  savePDFDialog: () => ipcRenderer.invoke('save-pdf-dialog')
 });

@@ -74,8 +74,9 @@
       }
       .leaderboardContainer {
         display: flex;
-        width: 100%;
+        width: 124vh;
         gap: 4vh;
+        margin-right: 20vh;
         height: 100%;
       }
       /* .form {
@@ -236,11 +237,17 @@
       .sauvgarderButton:hover{
         background-color: var(--button-hover);
       }
+      .info {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
     </style>
     <div class="container">
       <side-bar selected="tournaments"></side-bar>
       <div class="main" style="overflow-y: scroll; overflow-x: scroll; width: 8000px; padding-left: 500px; padding-right: 200px;">
         <div class="info">
+          <button class="" id="printButton"><img src="../icons/printer.png"></button>
           <h1
             style="
               padding: 0;

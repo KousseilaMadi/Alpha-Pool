@@ -137,40 +137,109 @@ window.myAPI.getTournament((data) => {
   console.log("round7: ", round_7);
   bracket.innerHTML = "";
   for (let u = 0; u < 7; u++) {
-    let nextRound = (u<6)?rounds[u+1]:[]
-    if(rounds[u].length > 0)
-    buildRound(data.tournament.tournamentId, bracket, rounds[u], nextRound, u + 1, spaces_1[u], spaces_2[u]);
-    if(nextRound.length > 0)
-    for(let i = 0;i<rounds[u].length;i+=2){
-      window.myAPI.updateAncestor(nextRound[Math.floor(i/2)].matchId, 1, rounds[u][i].matchId)
-      window.myAPI.updateAncestor(nextRound[Math.floor(i/2)].matchId, 2, rounds[u][i+1].matchId)
-    }
+    let nextRound = u < 6 ? rounds[u + 1] : [];
+    if (rounds[u].length > 0)
+      buildRound(
+        data.tournament.tournamentId,
+        bracket,
+        rounds[u],
+        nextRound,
+        u + 1,
+        spaces_1[u],
+        spaces_2[u]
+      );
+    if (nextRound.length > 0)
+      for (let i = 0; i < rounds[u].length; i += 2) {
+        window.myAPI.updateAncestor(
+          nextRound[Math.floor(i / 2)].matchId,
+          1,
+          rounds[u][i].matchId
+        );
+        window.myAPI.updateAncestor(
+          nextRound[Math.floor(i / 2)].matchId,
+          2,
+          rounds[u][i + 1].matchId
+        );
+      }
+  }
+  
+  const printButton = document.getElementById("printButton");
+  if (printButton) {
+    printButton.addEventListener('click', () => {
+
+      window.myAPI.savePDFDialog().then((filePath) => {
+        if (filePath) {
+          // use the filePath to generate or save your PDF
+          console.log("User selected path:", filePath);
+          window.myAPI.generatePdf({tournamentName: data.tournament.name, rounds: rounds}, filePath)
+        }
+      });
+    })
   }
 });
-//TODO: players not updating using the trigger in next match
 
-function buildRound(tournamentId, bracket, round,nextRound, number, spacer_1Count, spacer_2Count) {
+function buildRound(
+  tournamentId,
+  bracket,
+  round,
+  nextRound,
+  number,
+  spacer_1Count,
+  spacer_2Count
+) {
   bracket.innerHTML += `<div class="round" id=round_${number} style="border-left: 1vh solid gray;"></div>`;
   const roundEl = document.getElementById(`round_${number}`);
-  roundEl.innerHTML += `<p style="font-size:2.4vh; color: #808080; font-weight:700;">Tour ${number}</p>`
+  roundEl.innerHTML += `<p style="font-size:2.4vh; color: #808080; font-weight:700;">${(nextRound.length === 1)?'Demi-Final':(nextRound.length === 0)?'Final':`Tour ${number}`}</p>`;
   for (let i = 0; i < round.length; i += 2) {
     if (round.length === 1) {
       roundEl.innerHTML += `<match-el player1Score="${round[i].player1Score}" player2Score="${round[i].player2Score}" tournamentId="${tournamentId}" winnerId="${round[i].winnerId}" player_1="${round[i].player1Name}" player_2="${round[i].player2Name}" player_1Id="${round[i].player1Id}" player_2Id="${round[i].player2Id}" matchId="${round[i].matchId}"></match-el>`;
     } else {
-      roundEl.innerHTML += `<match-el player1Score="${round[i].player1Score}" player2Score="${round[i].player2Score}" tournamentId="${tournamentId}" winnerId="${round[i].winnerId}" player_1="${round[i].player1Name}" player_2="${round[i].player2Name}" player_1Id="${round[i].player1Id}" player_2Id="${round[i].player2Id}" matchId="${round[i].matchId}" nextMatch="${nextRound[Math.floor(i / 2)].matchId}"></match-el>`;
+      roundEl.innerHTML += `<match-el player1Score="${
+        round[i].player1Score
+      }" player2Score="${
+        round[i].player2Score
+      }" tournamentId="${tournamentId}" winnerId="${
+        round[i].winnerId
+      }" player_1="${round[i].player1Name}" player_2="${
+        round[i].player2Name
+      }" player_1Id="${round[i].player1Id}" player_2Id="${
+        round[i].player2Id
+      }" matchId="${round[i].matchId}" nextMatch="${
+        nextRound[Math.floor(i / 2)].matchId
+      }"></match-el>`;
 
       for (let s = 0; s < spacer_1Count; s++) {
         roundEl.innerHTML += `<div class="spacer"></div>`;
       }
       if (Number(i + 1) === Number(round.length - 1)) {
         //to avoid adding spaces after the last match is added
-        roundEl.innerHTML += `<match-el player1Score="${round[i+1].player1Score}" player2Score="${round[i+1].player2Score}" tournamentId="${tournamentId}" winnerId="${round[i+1].winnerId}" player_1="${
-          round[i + 1].player1Name
-        }" player_2="${round[i + 1].player2Name}" matchId="${round[i+1].matchId}" nextMatch="${nextRound[Math.floor(Number(i+1) / 2)].matchId}" player_1Id="${round[i+1].player1Id}" player_2Id="${round[i+1].player2Id}"></match-el>`;
+        roundEl.innerHTML += `<match-el player1Score="${
+          round[i + 1].player1Score
+        }" player2Score="${
+          round[i + 1].player2Score
+        }" tournamentId="${tournamentId}" winnerId="${
+          round[i + 1].winnerId
+        }" player_1="${round[i + 1].player1Name}" player_2="${
+          round[i + 1].player2Name
+        }" matchId="${round[i + 1].matchId}" nextMatch="${
+          nextRound[Math.floor(Number(i + 1) / 2)].matchId
+        }" player_1Id="${round[i + 1].player1Id}" player_2Id="${
+          round[i + 1].player2Id
+        }"></match-el>`;
       } else {
-        roundEl.innerHTML += `<match-el player1Score="${round[i+1].player1Score}" player2Score="${round[i+1].player2Score}" tournamentId="${tournamentId}" winnerId="${round[i+1].winnerId}" player_1="${
-          round[i + 1].player1Name
-        }" player_2="${round[i + 1].player2Name}" matchId="${round[i+1].matchId}" nextMatch="${nextRound[Math.floor(Number(i+1) / 2)].matchId}" player_1Id="${round[i+1].player1Id}" player_2Id="${round[i+1].player2Id}"></match-el>`;
+        roundEl.innerHTML += `<match-el player1Score="${
+          round[i + 1].player1Score
+        }" player2Score="${
+          round[i + 1].player2Score
+        }" tournamentId="${tournamentId}" winnerId="${
+          round[i + 1].winnerId
+        }" player_1="${round[i + 1].player1Name}" player_2="${
+          round[i + 1].player2Name
+        }" matchId="${round[i + 1].matchId}" nextMatch="${
+          nextRound[Math.floor(Number(i + 1) / 2)].matchId
+        }" player_1Id="${round[i + 1].player1Id}" player_2Id="${
+          round[i + 1].player2Id
+        }"></match-el>`;
         for (let s = 0; s < spacer_2Count; s++) {
           roundEl.innerHTML += '<div class="spacer"></div>';
         }
@@ -179,54 +248,70 @@ function buildRound(tournamentId, bracket, round,nextRound, number, spacer_1Coun
   }
 }
 
-function updateMatch(tournamentId, matchId, winnerId, nextMatchId, playerPosition, score){
+function updateMatch(
+  tournamentId,
+  matchId,
+  winnerId,
+  nextMatchId,
+  playerPosition,
+  score
+) {
   //update match
   //update next match
-  console.log("tournamentId:",tournamentId, "matchId:", matchId, "winnerId:",winnerId ,"nextMatchId:",nextMatchId, "playerPosition:",playerPosition, "score:",score)
+  console.log(
+    "tournamentId:",
+    tournamentId,
+    "matchId:",
+    matchId,
+    "winnerId:",
+    winnerId,
+    "nextMatchId:",
+    nextMatchId,
+    "playerPosition:",
+    playerPosition,
+    "score:",
+    score
+  );
   // window.myAPI.updateMatchWinner(matchId, winnerId)
   // window.myAPI.updateNextMatch(nextMatchId, playerPosition, winnerId)
-  const scoreModal = document.getElementById('scoreModal')
-  const input = document.getElementById('scoreInput')
-  const output = document.getElementById('scoreOutput')
-  const saveScore = document.getElementById('saveScore')
-  const scoreInput = document.getElementById('scoreInputField')
-  const scoreOutput = document.getElementById('scoreOutputField')
-  const ok = document.getElementById('ok')
-  scoreModal.classList.remove('hidden')
-  if(score > -1){
-    output.classList.remove('hidden')
-    input.classList.add('hidden')
-    scoreOutput.textContent = score
-    if(ok)
-      ok.addEventListener('click', () => {
-    output.classList.add('hidden')
-    scoreModal.classList.add('hidden')
-  })
-  
-}else{
-  output.classList.add('hidden')
-  input.classList.remove('hidden')
-  if(saveScore && scoreInput){
-    saveScore.addEventListener('click', () => {
-      if(Number(scoreInput.value) > -1){
-        window.myAPI.updateScore(matchId, playerPosition, scoreInput.value)
-        scoreInput.classList.remove('required')
-        console.log(scoreInput.value)
-        input.classList.add('hidden')
-        scoreModal.classList.add('hidden')
-        scoreInput.value = 0
-        scoreInput.textContent = 0
-        location.reload()
-        // window.myAPI.fetchTournament(tournamentId)
-        }else{
-          scoreInput.classList.add('required')
+  const scoreModal = document.getElementById("scoreModal");
+  const input = document.getElementById("scoreInput");
+  const output = document.getElementById("scoreOutput");
+  const saveScore = document.getElementById("saveScore");
+  const scoreInput = document.getElementById("scoreInputField");
+  const scoreOutput = document.getElementById("scoreOutputField");
+  const ok = document.getElementById("ok");
+  scoreModal.classList.remove("hidden");
+  if (score > -1) {
+    output.classList.remove("hidden");
+    input.classList.add("hidden");
+    scoreOutput.textContent = score;
+    if (ok)
+      ok.addEventListener("click", () => {
+        output.classList.add("hidden");
+        scoreModal.classList.add("hidden");
+      });
+  } else {
+    output.classList.add("hidden");
+    input.classList.remove("hidden");
+    if (saveScore && scoreInput) {
+      saveScore.addEventListener("click", () => {
+        if (Number(scoreInput.value) > -1) {
+          window.myAPI.updateScore(matchId, playerPosition, scoreInput.value);
+          scoreInput.classList.remove("required");
+          console.log(scoreInput.value);
+          input.classList.add("hidden");
+          scoreModal.classList.add("hidden");
+          scoreInput.value = 0;
+          scoreInput.textContent = 0;
+          location.reload();
+          // window.myAPI.fetchTournament(tournamentId)
+        } else {
+          scoreInput.classList.add("required");
         }
-      })
+      });
     }
   }
-
-  
-
 }
 
 window.myAPI.getLeaderboard((data) => {
@@ -235,7 +320,9 @@ window.myAPI.getLeaderboard((data) => {
   const bracket = document.getElementById("bracket");
   const leaderboardContainer = document.getElementById("leaderboardContainer");
   const tournamentTitle = document.getElementById("tournamentTitle");
-
+  const printButton = document.getElementById("printButton");
+  if(printButton)
+    printButton.classList.add('hidden')
   bracket.classList.add("hidden");
   leaderboardContainer.classList.remove("hidden");
   tournamentTitle.textContent =
@@ -649,4 +736,5 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
+
 });

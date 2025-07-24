@@ -1,19 +1,19 @@
-class Match extends HTMLElement{
-    constructor(){
-        super();
-        const el = this.attachShadow({mode:'open'})
-        let player_1 = this.getAttribute('player_1')
-        let player_2 = this.getAttribute('player_2')
-        let nextMatch = this.getAttribute('nextMatch')
-        let matchId = this.getAttribute('matchId')
-        let player_1Id = this.getAttribute('player_1Id')
-        let player_2Id = this.getAttribute('player_2Id')
-        let player_1Score = this.getAttribute('player1Score')
-        let player_2Score = this.getAttribute('player2Score')
-        let winnerId = this.getAttribute('winnerId')
-        let tournamentId = this.getAttribute('tournamentId')
+class Match extends HTMLElement {
+  constructor() {
+    super();
+    const el = this.attachShadow({ mode: "open" });
+    let player_1 = this.getAttribute("player_1");
+    let player_2 = this.getAttribute("player_2");
+    let nextMatch = this.getAttribute("nextMatch");
+    let matchId = this.getAttribute("matchId");
+    let player_1Id = this.getAttribute("player_1Id");
+    let player_2Id = this.getAttribute("player_2Id");
+    let player_1Score = this.getAttribute("player1Score");
+    let player_2Score = this.getAttribute("player2Score");
+    let winnerId = this.getAttribute("winnerId");
+    let tournamentId = this.getAttribute("tournamentId");
 
-        el.innerHTML= `
+    el.innerHTML = `
         <style>
         .match {
           display: flex;
@@ -62,11 +62,29 @@ class Match extends HTMLElement{
         background-color:#cd7878df;}
         </style>
         <div class="match">
-            <button ${(Number(player_1Id) === Number(winnerId))?`class="player leftPlayer winner"`:(Number(player_2Id) === Number(winnerId))?`class="player leftPlayer loser"`: `class="player leftPlayer"`} onclick="updateMatch(${tournamentId}, ${matchId}, ${player_1Id}, ${nextMatch}, 1, ${player_1Score})">${player_1}</button>
-            <div class="vs">VS</div>
-            <button ${(Number(player_2Id) === Number(winnerId))?`class="player rightPlayer winner"`:(Number(player_1Id) === Number(winnerId))?`class="player rightPlayer loser"`: `class="player rightPlayer"`} onclick="updateMatch(${tournamentId}, ${matchId}, ${player_2Id}, ${nextMatch}, 2, ${player_2Score})">${player_2}</button>
-        </div>
-        `
+            <button ${
+              Number(player_1Id) === Number(winnerId)
+                ? `class="player leftPlayer winner"`
+                : Number(player_2Id) === Number(winnerId)
+                ? `class="player leftPlayer loser"`
+                : `class="player leftPlayer"`
+            } onclick="updateMatch(${tournamentId}, ${matchId}, ${player_1Id}, ${nextMatch}, 1, ${player_1Score})">${
+      (player_1 !== 'null') ? `${player_1} (${player_1Score > -1 ? player_1Score : ""})` : ""
     }
+
+    </button>
+            <div class="vs">VS</div>
+            <button ${
+              Number(player_2Id) === Number(winnerId)
+                ? `class="player rightPlayer winner"`
+                : Number(player_1Id) === Number(winnerId)
+                ? `class="player rightPlayer loser"`
+                : `class="player rightPlayer"`
+            } onclick="updateMatch(${tournamentId}, ${matchId}, ${player_2Id}, ${nextMatch}, 2, ${player_2Score})">${
+      (player_2 !== 'null') ? `${player_2} (${player_2Score > -1 ? player_2Score : ""})` : ""
+    }</button>
+        </div>
+        `;
+  }
 }
-customElements.define('match-el', Match)
+customElements.define("match-el", Match);
