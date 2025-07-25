@@ -7,12 +7,12 @@ const path = require("path");
 async function generatePDF(data, outputPath, mode) {
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
-  const logo = fs.readFileSync("./icons/alphapoollogo.png", {
+  const logo = fs.readFileSync("./icons/logo.png", {
     encoding: "base64",
   });
   let html = ``
   if (mode === "E") {
-    const spacers = [0, 1, 3, 7, 11, 16, 20];
+    const spacers = [0, 1, 3, 7, 15, 30, 40];
 
       html = `
     <html>
@@ -104,7 +104,7 @@ async function generatePDF(data, outputPath, mode) {
         </style>
     </head>
     <body>
-        <div class="header"><p class="title">${data.tournamentName}</p> <img style="background-color:#454545; width:16vh; height:auto; border-radius:1vh;" src="data:image/png;base64,${logo}"/></div>
+        <div class="header"><p class="title">${data.tournamentName}</p> <img style=" width:16vh; height:auto; border-radius:1vh;" src="data:image/png;base64,${logo}"/></div>
         <div class="bracket">`;
       let roundsCount = 0
       for (let i = 0; i < data.rounds.length; i++) {
@@ -221,7 +221,6 @@ async function generatePDF(data, outputPath, mode) {
         text-align: center;
       }
       .logo {
-        background-color:#454545;
         width:16vh; 
         height:auto; 
         border-radius:1vh;
