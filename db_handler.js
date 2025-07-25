@@ -1,5 +1,9 @@
 const Database = require("better-sqlite3");
-const db = new Database("AlphaPool");
+const { app } = require('electron');
+const path = require('path');
+const userDataPath = app.getPath('userData');
+const dbPath = path.join(userDataPath, 'alphapool.db');
+const db = new Database(dbPath);
 
 function initialize_db() {
   //edit this exec according to the form of the db later
