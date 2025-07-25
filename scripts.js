@@ -8,6 +8,7 @@ function onRegisterLoad() {
     timerPrice.textContent =
       Math.floor((minutes * 500) / 60).toString() + " DA";
   });
+  window.myAPI.fetchSessions()
   console.log("timers created!");
 }
 function onPause(value) {
@@ -58,6 +59,7 @@ window.myAPI.updateHistorySessionsList((data, totalAmount) => {
             <td colspan="4" style="text-align: center; color: gray;">Vide</td>
             </tr>`;
 
+            dayList.setAttribute('style', 'overflow-y:scroll;')
     data.reverse().forEach((el) => {
       dayList.innerHTML += `
             <tr>
@@ -423,7 +425,7 @@ window.myAPI.updateTournamentsList((data) => {
                   ${el.numberOfPlayers} Joueurs
                 </div>
                 <div style="align-content: center; display: flex; gap: 2vh;">
-                  <button class="edit_manage_tournament" style="font-size: 2.4vh;" onclick='manageTournament(${el.tournamentId}, "${el.mode}")'>Gérer</button>
+                  <button class="edit_manage_tournament" style="font-size: 2.4vh;" onclick='manageTournament(${el.tournamentId}, "${el.mode}")'>G&eacute;rer</button>
                   <button class="delete" onclick='deleteTournament(${el.tournamentId}, "${el.mode}")'><img src="../icons/delete.png" style="filter: invert(100%) sepia(3%) saturate(256%) hue-rotate(280deg) brightness(116%) contrast(100%);"></button>
                   </div>
               </li>
@@ -542,7 +544,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (tournamentButton)
     tournamentButton.addEventListener("click", () => {
-      window.myAPI.navigateTo("tournament");
+      window.myAPI.navigateTo("tournaments");
     });
 
   if (historyButton)

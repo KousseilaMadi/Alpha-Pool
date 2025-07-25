@@ -307,7 +307,7 @@ function fetch_leaderboard(id) {
     `SELECT * FROM Tournaments WHERE tournamentId = ?`
   );
   const getPlayers = db.prepare(
-    `SELECT Players.name, Players.playerId, LeaderboardPlayers.score FROM Players JOIN LeaderboardPlayers ON Players.playerId = LeaderboardPlayers.playerId WHERE LeaderboardPlayers.leaderboardId = ? ORDER BY LeaderboardPlayers.score ASC`
+    `SELECT Players.name, Players.playerId, LeaderboardPlayers.score FROM Players JOIN LeaderboardPlayers ON Players.playerId = LeaderboardPlayers.playerId WHERE LeaderboardPlayers.leaderboardId = ? ORDER BY LeaderboardPlayers.score DESC`
   );
   const fetch = db.transaction((id) => {
     const tournament = getTournament.get(id);

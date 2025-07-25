@@ -67,7 +67,7 @@ class SideBar extends HTMLElement{
             <ul>
             </br>
                 <header></header>
-                <a href="index.html"><li>Acceuil</li></a>
+                <a href="index.html"><li>Accueil</li></a>
                 <a href="register.html"><li ${(selected === 'register')?`class="selected"`:""}>Caisse</li></a>
                 <a href="history.html"><li ${(selected === 'history')?`class="selected"`:""}>Historique</li></a>
                 <a href="tournaments.html"><li ${(selected === 'tournaments')?`class="selected"`:""}>Tournois</li></a>

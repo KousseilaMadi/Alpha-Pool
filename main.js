@@ -3,8 +3,7 @@ const path = require("path");
 const db = require("./db_handler.js");
 const { register } = require("module");
 const { match } = require("assert");
-const generatePDF = require('./generatePDF')
-
+const generatePDF = require("./generatePDF");
 
 let mainWindow;
 const createWindow = () => {
@@ -57,6 +56,13 @@ Montant: ${price} DA`,
         });
       }
     });
+});
+
+ipcMain.on("fetchSessions", (event) => {
+  const allWindows = BrowserWindow.getAllWindows();
+  allWindows.forEach((win) => {
+    win.webContents.send("updateSessionsList", db.fetch_sessions());
+  });
 });
 
 ipcMain.on("fetchSessions-date", (event, day, month, year) => {
@@ -191,47 +197,51 @@ ipcMain.on("update-match-winner", (event, matchId, winnerId) => {
   try {
     db.setMatchWinner(matchId, winnerId);
   } catch (e) {
-      throw new Error(e)
-    
+    throw new Error(e);
   }
 });
 
-ipcMain.on("update-next-match", (event, nextMatchId, playerPosition, playerId) => {
-  if (playerPosition === 1) {
-    try {
-      db.update_match_p1(nextMatchId, playerId);
-      console.log("gg")
-    } catch (e) {
-      throw new Error(e)
+ipcMain.on(
+  "update-next-match",
+  (event, nextMatchId, playerPosition, playerId) => {
+    if (playerPosition === 1) {
+      try {
+        db.update_match_p1(nextMatchId, playerId);
+        console.log("gg");
+      } catch (e) {
+        throw new Error(e);
+      }
+    }
+    if (playerPosition === 2) {
+      try {
+        db.update_match_p2(nextMatchId, playerId);
+      } catch (e) {
+        throw new Error(e);
+      }
     }
   }
-  if (playerPosition === 2) {
-    try {
-      db.update_match_p2(nextMatchId, playerId);
-    } catch (e) {
-      throw new Error(e)
-      
-    }
-  }
+);
+
+ipcMain.on("update-score", (event, matchId, playerNumber, newScore) => {
+  db.updateScore(matchId, playerNumber, newScore);
 });
 
-ipcMain.on('update-score', (event, matchId, playerNumber, newScore) => {
-  db.updateScore(matchId, playerNumber, newScore)
-})
+ipcMain.on(
+  "update-ancestor",
+  (event, matchId, ancestorPosition, ancestorId) => {
+    db.updateAncestor(matchId, ancestorPosition, ancestorId);
+  }
+);
 
-ipcMain.on('update-ancestor', (event, matchId, ancestorPosition, ancestorId) => {
-  db.updateAncestor(matchId, ancestorPosition, ancestorId)
-})
+ipcMain.on("generate-pdf", (event, data, filePath) => {
+  generatePDF(data, filePath);
+});
 
-ipcMain.on('generate-pdf', (event, data, filePath) => {
-  generatePDF(data, filePath)
-})
-
-ipcMain.handle('save-pdf-dialog', async () => {
+ipcMain.handle("save-pdf-dialog", async () => {
   const { filePath, canceled } = await dialog.showSaveDialog({
-    title: 'Enregistrer Pdf',
-    defaultPath: 'tournoi.pdf',
-    filters: [{ name: 'fichiers Pdf', extensions: ['pdf'] }],
+    title: "Enregistrer Pdf",
+    defaultPath: "tournoi.pdf",
+    filters: [{ name: "fichiers Pdf", extensions: ["pdf"] }],
   });
 
   return canceled ? null : filePath;
@@ -244,7 +254,7 @@ ipcMain.on("navigate-to", (event, page, id, mode) => {
     historyDays: "Pages/historyDays.html",
     historyMonth: "Pages/historyMonth.html",
     register: "Pages/register.html",
-    editTournament: "Pages/edit_tournament.html",
+    tournaments: "Pages/tournaments.html",
     manageTournament: "Pages/manage_tournament.html",
   };
   const target = pageTree[page];

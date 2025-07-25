@@ -10,6 +10,8 @@ async function generatePDF(data, outputPath) {
   const spacers = [0, 1, 3, 7, 0, 0, 0];
   // Build HTML from the data object/array
   console.log(JSON.stringify(data));
+  const logo = fs.readFileSync('./icons/alphapoollogo.png', {encoding: 'base64'})
+
   let html = `
 <html>
 <head>
@@ -24,8 +26,15 @@ async function generatePDF(data, outputPath) {
         align-items: center;
         background-color: #fbfbfb;
       }
+      .header {
+      display:flex;
+      justify-content:space-between;
+      padding-left:2vh;
+      padding-right:2vh;
+      }
       .title {
         font-size: 3vh;
+        font-weight:600;
         text-align: center;
       }
       .bracket {
@@ -93,7 +102,7 @@ async function generatePDF(data, outputPath) {
     </style>
 </head>
 <body>
-    <div class="title">${data.tournamentName}</div>
+    <div class="header"><p class="title">${data.tournamentName}</p> <img style="background-color:#454545; width:16vh; height:auto; border-radius:1vh;" src="data:image/png;base64,${logo}"/></div>
     <div class="bracket">`;
   let roundsCount = 0
   for (let i = 0; i < data.rounds.length; i++) {
