@@ -168,12 +168,12 @@ window.myAPI.getTournament((data) => {
   const printButton = document.getElementById("printButton");
   if (printButton) {
     printButton.addEventListener('click', () => {
-
-      window.myAPI.savePDFDialog().then((filePath) => {
+      console.log('type:', typeof data.tournament.name)
+      window.myAPI.savePDFDialog('E').then((filePath) => {
         if (filePath) {
           // use the filePath to generate or save your PDF
-          console.log("User selected path:", filePath);
-          window.myAPI.generatePdf({tournamentName: data.tournament.name, rounds: rounds}, filePath)
+          console.log("User selected path:", filePath, 'E');
+          window.myAPI.generatePdf({tournamentName: data.tournament.name, rounds: rounds}, filePath, 'E')
         }
       });
     })
@@ -322,9 +322,6 @@ window.myAPI.getLeaderboard((data) => {
   const bracket = document.getElementById("bracket");
   const leaderboardContainer = document.getElementById("leaderboardContainer");
   const tournamentTitle = document.getElementById("tournamentTitle");
-  const printButton = document.getElementById("printButton");
-  if(printButton)
-    printButton.classList.add('hidden')
   bracket.classList.add("hidden");
   leaderboardContainer.classList.remove("hidden");
   tournamentTitle.textContent =
@@ -340,6 +337,22 @@ window.myAPI.getLeaderboard((data) => {
               </div>`;
     }
   }
+
+
+  const printButton = document.getElementById("printButton");
+  if (printButton) {
+    printButton.addEventListener('click', () => {
+
+      window.myAPI.savePDFDialog('C').then((filePath) => {
+        if (filePath) {
+          // use the filePath to generate or save your PDF
+          console.log("User selected path:", filePath, 'C');
+          window.myAPI.generatePdf(data, filePath, 'C')
+        }
+      });
+    })
+  }
+
 });
 
 const deleteButton = document.getElementById("del-btn");

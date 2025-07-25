@@ -176,6 +176,7 @@ contextBridge.exposeInMainWorld("myAPI", {
   updateAncestor: (matchId, ancestorPosition, ancestorId)=>{
     ipcRenderer.send('update-ancestor', matchId, ancestorPosition, ancestorId)
   },
-  generatePdf: (data, filePath)=> ipcRenderer.send('generate-pdf', data, filePath),
-  savePDFDialog: () => ipcRenderer.invoke('save-pdf-dialog')
+  generatePdf: (data, filePath, mode)=> ipcRenderer.send('generate-pdf', data, filePath, mode),
+  savePDFDialog: (mode) => {
+    return ipcRenderer.invoke('save-pdf-dialog', mode)}
 });
