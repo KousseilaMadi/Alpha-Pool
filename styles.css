@@ -38,7 +38,11 @@ body{
   font-weight: 500;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
-
+button:focus {
+  outline-width: .2vh;
+  outline-color: #5ac7ef;
+  outline-style: solid;
+}
 .bigButton:hover {
   background-color: var(--button-hover); /* Darker green on hover */
   transition: 0.5s ease;

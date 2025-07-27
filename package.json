@@ -6,12 +6,28 @@
   "author": "",
   "type": "commonjs",
   "main": "main.js",
+  "build": {
+    "icon": "icons/icon",
+    "appId": "com.kousseila.alphapool",
+    "productName": "Alpha Pool",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "**/*"
+    ],
+    "win": {
+      "target": "nsis"
+    }
+  },
   "scripts": {
     "start": "electron .",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "electron-builder"
   },
   "devDependencies": {
     "electron": "^37.1.0",
+    "electron-builder": "^26.0.12",
     "electron-rebuild": "^3.2.9"
   },
   "dependencies": {
