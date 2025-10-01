@@ -1,50 +1,79 @@
 const { contextBridge, ipcRenderer } = require("electron");
-const { dialog } = require("electron");
+
 class Timer {
-  constructor(onTick = null, tickInterval = 100) {
+  constructor(id, onTick = null, tickInterval = 10) {
+    this.id = id;
     this.startTime = null;
-    this.elapsed = 0;
     this.running = false;
     this.timerId = null;
-    this.onTick = onTick; // Optional callback every tick
+    this.onTick = onTick;
     this.tickInterval = tickInterval;
+
+    // Try to load start time from localStorage
+    const saved = localStorage.getItem(`timer_${id}_startTime`);
+    if (saved) {
+      this.startTime = parseInt(saved);
+      this.running = true;
+      this._startInternalLoop();
+    }
   }
 
-  start() {
-    if (this.running) return;
-    this.startTime = Date.now() - this.elapsed;
+  _startInternalLoop() {
     this.timerId = setInterval(() => {
-      this.elapsed = Date.now() - this.startTime;
+      if (!this.running || !this.startTime) return;
       if (typeof this.onTick === "function") {
         this.onTick(this.getFormattedTime(), this.getMinutes());
       }
     }, this.tickInterval);
+  }
+
+  start() {
+    if (this.running) return;
+    const elapsed = localStorage.getItem(`timer_${this.id}_pausedElapsed`)
+    if (elapsed){
+      this.startTime = Date.now() - parseInt(elapsed)
+      localStorage.removeItem(`timer_${this.id}_pausedElapsed`)
+    }else{
+      this.startTime = Date.now();
+      
+    }
+    localStorage.setItem(`timer_${this.id}_startTime`, this.startTime.toString());
     this.running = true;
+    this._startInternalLoop();
   }
 
   pause() {
     if (!this.running) return;
     clearInterval(this.timerId);
     this.running = false;
+    // Save elapsed time as offset
+    const elapsed = Date.now() - this.startTime;
+    localStorage.setItem(`timer_${this.id}_pausedElapsed`, elapsed.toString());
+    localStorage.removeItem(`timer_${this.id}_startTime`);
   }
 
   reset() {
     clearInterval(this.timerId);
-    this.elapsed = 0;
     this.running = false;
+    this.startTime = null;
+    localStorage.removeItem(`timer_${this.id}_startTime`);
+    localStorage.removeItem(`timer_${this.id}_pausedElapsed`);
     if (typeof this.onTick === "function") {
-      this.onTick(this.getFormattedTime(), this.getMinutes());
+      this.onTick("00:00:00", 0);
     }
   }
 
-  getTime() {
-    return this.elapsed;
+  getElapsed() {
+    if (this.startTime) {
+      return Date.now() - this.startTime;
+    }
+    const pausedElapsed = localStorage.getItem(`timer_${this.id}_pausedElapsed`);
+    return pausedElapsed ? parseInt(pausedElapsed) : 0;
   }
 
   getMinutes() {
-    const totalSeconds = Math.floor(this.elapsed / 1000);
-    const minutes = Math.floor(totalSeconds / 60);
-    return minutes;
+    const totalSeconds = Math.floor(this.getElapsed() / 1000);
+    return Math.floor(totalSeconds / 60);
   }
 
   getPrice() {
@@ -52,40 +81,39 @@ class Timer {
   }
 
   getFormattedTime() {
-    const totalSeconds = Math.floor(this.elapsed / 1000);
-    const hours = Math.floor(totalSeconds / 3600).toString()
-      .padStart(2, "0");
-    const minutes = Math.floor((totalSeconds % 3600) / 60).toString()
-      .padStart(2, "0");
-    const seconds = (totalSeconds % 60).toString()
-      .padStart(2, "0");
+    const totalSeconds = Math.floor(this.getElapsed() / 1000);
+    const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, "0");
+    const minutes = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, "0");
+    const seconds = (totalSeconds % 60).toString().padStart(2, "0");
     return `${hours}:${minutes}:${seconds}`;
   }
 }
+
 let tickHandler = null;
 const timers = [];
+
 contextBridge.exposeInMainWorld("myAPI", {
   debug: () => console.log("debug:"),
+
   setTickHandler: (callback) => {
     tickHandler = callback;
   },
+
   createTimers: () => {
     for (let i = 0; i < 4; i++) {
-      const timer = new Timer((formattedTime, minutes) => {
+      const timer = new Timer(i, (formattedTime, minutes) => {
         tickHandler?.(i, formattedTime, minutes);
       });
       timers.push(timer);
     }
   },
+
   startTimer: (id) => timers[id].start(),
   pauseTimer: (id) => timers[id].pause(),
   stopTimer: (id) => timers[id].reset(),
-  getTime: (id) => {
-    return timers[id].getFormattedTime();
-  },
-  getPrice: (id) => {
-    return timers[id].getPrice();
-  },
+  getTime: (id) => timers[id].getFormattedTime(),
+  getPrice: (id) => timers[id].getPrice(),
+
   alert: (table, time, price) => ipcRenderer.send("alert", table, time, price),
   fetchSessions: () => ipcRenderer.send("fetchSessions"),
   fetchSessions_date: (day, month, year) =>
@@ -166,17 +194,23 @@ contextBridge.exposeInMainWorld("myAPI", {
     ),
   fetchPlayers: (tournamentId) =>
     ipcRenderer.send("fetch-players", tournamentId),
-  getPlayers: (callback)=>ipcRenderer.on('get-players', (_, tournamentId, data) => callback(tournamentId, data)),
-  updateMatchWinner: (matchId, winnerId)=>
-    ipcRenderer.send('update-match-winner', matchId, winnerId),
-  updateNextMatch: (nextMatchId, playerPosition, playerId)=> ipcRenderer.send('update-next-match', nextMatchId, playerPosition, playerId),
+  getPlayers: (callback) =>
+    ipcRenderer.on("get-players", (_, tournamentId, data) =>
+      callback(tournamentId, data)
+    ),
+  updateMatchWinner: (matchId, winnerId) =>
+    ipcRenderer.send("update-match-winner", matchId, winnerId),
+  updateNextMatch: (nextMatchId, playerPosition, playerId) =>
+    ipcRenderer.send("update-next-match", nextMatchId, playerPosition, playerId),
   updateScore: (matchId, playerNumber, newScore) => {
-    ipcRenderer.send('update-score', matchId, playerNumber, newScore)
+    ipcRenderer.send("update-score", matchId, playerNumber, newScore);
   },
-  updateAncestor: (matchId, ancestorPosition, ancestorId)=>{
-    ipcRenderer.send('update-ancestor', matchId, ancestorPosition, ancestorId)
+  updateAncestor: (matchId, ancestorPosition, ancestorId) => {
+    ipcRenderer.send("update-ancestor", matchId, ancestorPosition, ancestorId);
   },
-  generatePdf: (data, filePath, mode)=> ipcRenderer.send('generate-pdf', data, filePath, mode),
+  generatePdf: (data, filePath, mode) =>
+    ipcRenderer.send("generate-pdf", data, filePath, mode),
   savePDFDialog: (mode) => {
-    return ipcRenderer.invoke('save-pdf-dialog', mode)}
+    return ipcRenderer.invoke("save-pdf-dialog", mode);
+  }
 });

@@ -1,25 +1,40 @@
 function onRegisterLoad() {
   window.myAPI.createTimers();
-  window.myAPI.setTickHandler((id, time, minutes) => {
-    const card = document.querySelector(`counter-card[id='${id}']`);
-    const timerDisplay = card.shadowRoot.getElementById(`timer_${id}`);
-    const timerPrice = card.shadowRoot.getElementById(`price_${id}`);
-    timerDisplay.textContent = time;
-    timerPrice.textContent =
-      Math.floor((minutes * 500) / 60).toString() + " DA";
-  });
-  window.myAPI.fetchSessions()
+   window.myAPI.setTickHandler((id, time, minutes) => {
+    const card = document.querySelector(`counter-card[id='${id}']`)
+  
+  const timerDisplay = card.shadowRoot.getElementById(`timer_${id}`);
+  const timerPrice = card.shadowRoot.getElementById(`price_${id}`);
+  timerDisplay.textContent = time
+  timerPrice.textContent = Math.floor((minutes * 500) / 60).toString() + " DA";
+});
+window.myAPI.fetchSessions()
+for (let i = 0; i < 4; i++) {
+  
+  
+  if (localStorage.getItem(`timer_${i}_status`) == "paused")
+    {
+      window.myAPI.startTimer(i)
+      setTimeout(()=>{
+        
+        window.myAPI.pauseTimer(i)
+      }, 15)
+    }
+  }
   console.log("timers created!");
 }
 function onPause(value) {
   console.log("pause: ", value);
+  localStorage.setItem(`timer_${value}_status`, "paused")
   window.myAPI.pauseTimer(value);
 }
 function onStart(value) {
   console.log("start: ", value);
+  localStorage.setItem(`timer_${value}_status`, "started")
   window.myAPI.startTimer(value);
 }
 function onStop(value) {
+  localStorage.setItem(`timer_${value}_status`, "stopped")
   window.myAPI.alert(
     value + 1,
     window.myAPI.getTime(value),
