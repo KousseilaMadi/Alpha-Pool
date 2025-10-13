@@ -1,15 +1,20 @@
-const puppeteer = require("puppeteer");
+const puppeteer = require('puppeteer');
 const fs = require("fs");
 const path = require("path");
 
 // const html = fs.readFileSync(path.join(__dirname, "template.html"), "utf8");
 
 async function generatePDF(data, outputPath, mode) {
+console.log('Chromium path:', );
+
+
   const browser = await puppeteer.launch();
+
   const page = await browser.newPage();
-  const logo = fs.readFileSync("./icons/logo.png", {
-    encoding: "base64",
-  });
+
+const logoPath = path.join(__dirname, "icons", "logo.png");
+const logo = fs.readFileSync(logoPath, { encoding: "base64" });
+
   let html = ``
   if (mode === "E") {
     const spacers = [0, 1, 3, 7, 15, 30, 40];

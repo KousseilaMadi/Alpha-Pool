@@ -180,17 +180,27 @@ window.myAPI.getTournament((data) => {
       }
   }
   
+//   const printButton = document.getElementById("printButton");
+//   if (printButton) {
+//     printButton.addEventListener('click', () => {
+//       console.log('type:', typeof data.tournament.name)
+//       window.myAPI.savePDFDialog('E').then((filePath) => {
+//         if (filePath) {
+//           // use the filePath to generate or save your PDF
+//           console.log("User selected path:", filePath, 'E');
+//           window.myAPI.generatePdf({tournamentName: data.tournament.name, rounds: rounds}, filePath, 'E')
+//         }
+//       });
+//     })
+//   }
+// });
+//clone
   const printButton = document.getElementById("printButton");
   if (printButton) {
     printButton.addEventListener('click', () => {
       console.log('type:', typeof data.tournament.name)
-      window.myAPI.savePDFDialog('E').then((filePath) => {
-        if (filePath) {
-          // use the filePath to generate or save your PDF
-          console.log("User selected path:", filePath, 'E');
-          window.myAPI.generatePdf({tournamentName: data.tournament.name, rounds: rounds}, filePath, 'E')
-        }
-      });
+      window.myAPI.generatePdf({tournamentName: data.tournament.name, rounds: rounds}, 'E')
+        
     })
   }
 });
@@ -354,17 +364,28 @@ window.myAPI.getLeaderboard((data) => {
   }
 
 
+//   const printButton = document.getElementById("printButton");
+//   if (printButton) {
+//     printButton.addEventListener('click', () => {
+
+//       window.myAPI.savePDFDialog('C').then((filePath) => {
+//         if (filePath) {
+//           // use the filePath to generate or save your PDF
+//           console.log("User selected path:", filePath, 'C');
+//           window.myAPI.generatePdf(data, filePath, 'C')
+//         }
+//       });
+//     })
+//   }
+
+// });
+//clone
   const printButton = document.getElementById("printButton");
   if (printButton) {
     printButton.addEventListener('click', () => {
 
-      window.myAPI.savePDFDialog('C').then((filePath) => {
-        if (filePath) {
-          // use the filePath to generate or save your PDF
-          console.log("User selected path:", filePath, 'C');
-          window.myAPI.generatePdf(data, filePath, 'C')
-        }
-      });
+      window.myAPI.generatePdf(data, 'C')
+        
     })
   }
 

@@ -1,7 +1,7 @@
 {
   "name": "alpha-pool",
-  "version": "1.0.1",
-  "description": "",
+  "version": "1.0.4",
+  "description": "trial",
   "license": "ISC",
   "author": "",
   "type": "commonjs",
@@ -14,7 +14,8 @@
       "output": "dist"
     },
     "files": [
-      "**/*"
+      "**/*",
+      "node_modules/puppeteer/.local-chromium/**/*"
     ],
     "win": {
       "target": "nsis"
@@ -32,6 +33,8 @@
   },
   "dependencies": {
     "better-sqlite3": "^12.2.0",
-    "puppeteer": "^24.15.0"
+    "chrome-launcher": "^1.2.1",
+    "puppeteer": "^24.15.0",
+    "puppeteer-core": "^24.23.0"
   }
 }

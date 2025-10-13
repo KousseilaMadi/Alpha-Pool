@@ -13,10 +13,10 @@ const createWindow = () => {
     width: 800,
     height: 600,
     webPreferences: {
-      devTools: false,
+      devTools: true,
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
-      nodeIntegration: false,
+      nodeIntegration: true,
     },
   });
 
@@ -233,14 +233,18 @@ ipcMain.on(
   }
 );
 
-ipcMain.on("generate-pdf", (event, data, filePath, mode) => {
-  generatePDF(data, filePath, mode);
+ipcMain.on("generate-pdf", (event, data, mode) => {
+  const homeDir = path.join(app.getPath("documents"), 'tournois.pdf')
+  generatePDF(data, homeDir, mode);
 });
 
 ipcMain.handle("save-pdf-dialog", async (mode) => {
+  
+  const homeDir = path.join(app.getPath("documents"), 'tournois.pdf')
+  // const homeDir = require('os').homedir();
   const { filePath, canceled } = await dialog.showSaveDialog({
     title: "Enregistrer Pdf",
-    defaultPath: 'tournoi.pdf',
+    defaultPath: homeDir,
     filters: [{ name: "fichiers Pdf", extensions: ["pdf"] }],
   });
 

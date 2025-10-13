@@ -208,8 +208,8 @@ contextBridge.exposeInMainWorld("myAPI", {
   updateAncestor: (matchId, ancestorPosition, ancestorId) => {
     ipcRenderer.send("update-ancestor", matchId, ancestorPosition, ancestorId);
   },
-  generatePdf: (data, filePath, mode) =>
-    ipcRenderer.send("generate-pdf", data, filePath, mode),
+  generatePdf: (data, mode) =>
+    ipcRenderer.send("generate-pdf", data, mode),
   savePDFDialog: (mode) => {
     return ipcRenderer.invoke("save-pdf-dialog", mode);
   }
