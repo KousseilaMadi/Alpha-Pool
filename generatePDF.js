@@ -1,23 +1,39 @@
-const puppeteer = require('puppeteer');
+const { PDFDocument, rgb, StandardFonts } = require("pdf-lib");
 const fs = require("fs");
 const path = require("path");
-
-// const html = fs.readFileSync(path.join(__dirname, "template.html"), "utf8");
+const { app } = require('electron');
 
 async function generatePDF(data, outputPath, mode) {
-console.log('Chromium path:', );
-
-
-  const browser = await puppeteer.launch();
-
-  const page = await browser.newPage();
 
 const logoPath = path.join(__dirname, "icons", "logo.png");
 const logo = fs.readFileSync(logoPath, { encoding: "base64" });
 
+ const pdfDoc = await PDFDocument.create();
+  const page = pdfDoc.addPage([600, 400]);
+
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+
+  page.drawText('Hello PDF-Lib!', {
+    x: 50,
+    y: 350,
+    size: 24,
+    font,
+    color: rgb(0, 0, 0),
+  });
+
+  const pdfBytes = await pdfDoc.save();
+
+  fs.writeFileSync(outputPath, pdfBytes);
+  console.log('PDF created successfully!');
+
+
   let html = ``
+  let page_code = ``
   if (mode === "E") {
     const spacers = [0, 1, 3, 7, 15, 30, 40];
+      page_code = `
+      
+      `
 
       html = `
     <html>
@@ -109,7 +125,10 @@ const logo = fs.readFileSync(logoPath, { encoding: "base64" });
         </style>
     </head>
     <body>
-        <div class="header"><p class="title">${data.tournamentName}</p> <img style=" width:16vh; height:auto; border-radius:1vh;" src="data:image/png;base64,${logo}"/></div>
+        <div class="header">
+          <p class="title">${data.tournamentName}</p>
+          <img style=" width:16vh; height:auto; border-radius:1vh;" src="data:image/png;base64,${logo}"/>
+        </div>
         <div class="bracket">`;
       let roundsCount = 0
       for (let i = 0; i < data.rounds.length; i++) {
@@ -181,10 +200,8 @@ const logo = fs.readFileSync(logoPath, { encoding: "base64" });
                 html += `
                 <div class="bigSpacer"></div>`;
                 }
-
               }
           }
-
           html += `</div>`;//round
         }
       }
@@ -195,7 +212,6 @@ const logo = fs.readFileSync(logoPath, { encoding: "base64" });
     </body>
     </html>
       `;
-    console.log(html);
     // Load HTML into Puppeteer
   }
   if (mode === "C") {
@@ -284,19 +300,10 @@ const logo = fs.readFileSync(logoPath, { encoding: "base64" });
 </html>
 `;
   }
-  await page.setContent(html, { waitUntil: "networkidle0" });
+  
 
-  // Save to file (or remove 'path' to return a buffer instead)
-  await page.pdf({
-    path: outputPath,
-    format: "A4",
-    landscape: mode === "E" ? true : false,
-    printBackground: true,
-  });
 
-  await browser.close();
 
-  console.log(`✅ PDF generated at ${outputPath}`);
 }
 
 module.exports = generatePDF;
